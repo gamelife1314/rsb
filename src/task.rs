@@ -6,8 +6,8 @@
 //! use std::io;
 //! use std::sync::Arc;
 //! use clap::Parser;
-//! use rb::{Arg, Task};
-//! use rb::arg::OutputFormat;
+//! use rsb::{Arg, Task};
+//! use rsb::arg::OutputFormat;
 //!
 //! let arg = Arg::parse();
 //! print_tip(&arg)?;
@@ -254,7 +254,7 @@ impl Task {
     pub fn run(self: Arc<Self>) -> anyhow::Result<Arc<Self>> {
         let rt = runtime::Builder::new_multi_thread()
             .worker_threads(num_cpus::get())
-            .thread_name("rb-tokio-runtime-worker")
+            .thread_name("rsb-tokio-runtime-worker")
             .unhandled_panic(runtime::UnhandledPanic::ShutdownRuntime)
             .enable_all()
             .build()?;

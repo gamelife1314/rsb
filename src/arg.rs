@@ -361,7 +361,7 @@ mod tests {
 
     use super::*;
     const URI: &str = "https://localhost/test";
-    const BINARY: &str = "rb";
+    const BINARY: &str = "rsb";
 
     #[test]
     fn test_is_number() {
@@ -398,7 +398,7 @@ mod tests {
     #[test]
     fn test_required_parameters() {
         let mut cmd = Arg::command();
-        let result = cmd.try_get_matches_from_mut(vec!["rb"]);
+        let result = cmd.try_get_matches_from_mut(vec!["rsb"]);
         assert!(result.as_ref().is_err());
         let err_msg = result.err().unwrap().to_string();
         assert!(err_msg.contains(

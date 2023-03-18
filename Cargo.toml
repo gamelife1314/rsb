@@ -1,13 +1,13 @@
 [package]
-name = "rb"
+name = "rsb"
 version = "0.1.0"
 edition = "2021"
 authors = ["MichaelFu <michael.fudenglong@qq.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/gamelife1314/rb"
-repository = "https://github.com/gamelife1314/rb"
-keywords = ["rb", "benchmark", "http"]
+homepage = "https://github.com/gamelife1314/rsb"
+repository = "https://github.com/gamelife1314/rsb"
+keywords = ["rsb", "benchmark", "http"]
 categories = ["command-line-utilities"]
 description = "a http server benchmark tool, written in rust."
 
@@ -36,7 +36,7 @@ concolor-clap = "0.1.0"
 
 
 [[bin]]
-name = "rb"
+name = "rsb"
 
 [profile.release]
 strip = true

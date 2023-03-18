@@ -4,7 +4,7 @@ use std::sync::Arc;
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use rb::{arg::OutputFormat, Arg, Task};
+use rsb::{arg::OutputFormat, Arg, Task};
 
 fn create_count_progress_bar(arg: &Arg) -> ProgressBar {
     let pb = ProgressBar::new(arg.requests.unwrap());

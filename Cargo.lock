@@ -1128,31 +1128,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rb"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytes",
- "clap",
- "clap_complete",
- "colored",
- "concolor-clap",
- "env_logger",
- "governor",
- "indicatif",
- "log",
- "mime_guess",
- "num",
- "num_cpus",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
-]
-
-[[package]]
 name = "redox_syscall"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1217,6 +1192,31 @@ dependencies = [
  "wasm-streams",
  "web-sys",
  "winreg",
+]
+
+[[package]]
+name = "rsb"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "clap",
+ "clap_complete",
+ "colored",
+ "concolor-clap",
+ "env_logger",
+ "governor",
+ "indicatif",
+ "log",
+ "mime_guess",
+ "num",
+ "num_cpus",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]

@@ -6,8 +6,8 @@
 //! use std::io;
 //! use std::sync::Arc;
 //! use clap::Parser;
-//! use rb::{Arg, Task};
-//! use rb::arg::OutputFormat;
+//! use rsb::{Arg, Task};
+//! use rsb::arg::OutputFormat;
 //!
 //! let arg = Arg::parse();
 //! let output_format = arg.output_format;
