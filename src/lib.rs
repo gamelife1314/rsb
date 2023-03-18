@@ -2,7 +2,7 @@
 #![feature(associated_type_defaults)]
 #![deny(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::single_char_pattern))]
-//! rb is a http server benchmark tool.
+//! rsb is a http server benchmark tool.
 
 pub mod arg;
 pub(crate) mod client;

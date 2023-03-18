@@ -1,10 +1,10 @@
-# rb - rust benchmark
+# rsb - rust benchmark
 
-[![Build Status](https://github.com/gamelife1314/rb/workflows/CI/badge.svg)](https://github.com/gamelife1314/rb/actions)
-[![License MIT](https://img.shields.io/badge/liccense-MIT-green?style=flat&logo=PowerShell)](https://github.com/gamelife1314/rb/blob/main/LICENSE)
-[![Codecov](https://codecov.io/gh/gamelife1314/rb/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gamelife1314/rb)
+[![Build Status](https://github.com/gamelife1314/rsb/workflows/CI/badge.svg)](https://github.com/gamelife1314/rsb/actions)
+[![License MIT](https://img.shields.io/badge/liccense-MIT-green?style=flat&logo=PowerShell)](https://github.com/gamelife1314/rsb/blob/main/LICENSE)
+[![Codecov](https://codecov.io/gh/gamelife1314/rsb/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gamelife1314/rsb)
 
-`rb` is a http server benchmark tool written in rust. The development of this tool is mainly inspired 
+`rsb` is a http server benchmark tool written in rust. The development of this tool is mainly inspired 
 by the [`bombardier`](https://github.com/codesenberg/bombardier) project, and I would like to thank the author for his 
 contribution. On the other hand, this tool was developed primarily to learn and understand Rust.
 
@@ -13,22 +13,22 @@ contribution. On the other hand, this tool was developed primarily to learn and 
 If you are a Rust developer，and you have already installed Rust-related toolchains locally, you can install them 
 through Cargo.
 
-    cargo install --git https://github.com/gamelife1314/rb
+    cargo install --git https://github.com/gamelife1314/rsb
 
-Or you can go [Release Page](https://github.com/gamelife1314/rb/releases) to download the compiled version for the 
+Or you can go [Release Page](https://github.com/gamelife1314/rsb/releases) to download the compiled version for the 
 corresponding platform.
 
 If you want to use the automatic completion function of the shell, you can output the completion script corresponding 
-to the shell through a command similar to the following. `rb` supports `bash`, `elvish`, `fish`, `powershell`, and `zsh`.
+to the shell through a command similar to the following. `rsb` supports `bash`, `elvish`, `fish`, `powershell`, and `zsh`.
 For example:
     
-    eval "$(rb --completions zsh)"
+    eval "$(rsb --completions zsh)"
 
 ## Usage
 
 First, let's take a look at the overall picture of this tool:
 
-![rb --help](./assets/rb-help.png)
+![rsb --help](./assets/rsb-help.png)
 
 The tool has two modes when running, which must be specified when using it. One is based on the total amount, that is, 
 you need to declare how many requests you need to send in total, which can be specified by the `-n` parameter. The other 
@@ -37,17 +37,17 @@ the unit is seconds.
 
 First, let's look at the example of specifying the total amount：
 
-![rb -n url](./assets/basic.gif)
+![rsb -n url](./assets/basic.gif)
 
 Let's look at another example of specifying the test duration:
 
-![rb -d url](./assets/duration.gif)
+![rsb -d url](./assets/duration.gif)
 
 During use, we usually encounter too many specified numbers, or the specified test time is too long. When you want to 
 cancel in the middle, you can cancel it directly through `ctrl-c`. After the tool receives the signal, it will complete 
 the current request. Exit directly and output the current statistics.
 
-![rb-cancel](./assets/cancel.gif)
+![rsb-cancel](./assets/cancel.gif)
 
 ## Header
 
@@ -74,9 +74,9 @@ coexist with other request body setting parameters. when requesting, the content
 
 example:
 
-    rb -n 100 --text-body "anything" http://127.0.0.1:8000/post-text
+    rsb -n 100 --text-body "anything" http://127.0.0.1:8000/post-text
     // or
-    rb -n 1 -m POST --text-body "chatgpt4.0 is comming and very strong" http://127.0.0.1:54326/post-text
+    rsb -n 1 -m POST --text-body "chatgpt4.0 is comming and very strong" http://127.0.0.1:54326/post-text
 
 ## JSON BODY
 
@@ -85,9 +85,9 @@ file with `--json-file`. When requesting, the request type will be specified as:
 
 example:
 
-    rb -n 1 -m POST --json-body '{"version":"v0.1.0","name":"rb"}' http://127.0.0.1:54326/post-json
+    rsb -n 1 -m POST --json-body '{"version":"v0.1.0","name":"rsb"}' http://127.0.0.1:54326/post-json
     // or
-    rb -n 1 -m POST --json-file json.txt http://127.0.0.1:54326/post-json
+    rsb -n 1 -m POST --json-file json.txt http://127.0.0.1:54326/post-json
 
 ## FORM BODY
 
@@ -96,7 +96,7 @@ This parameter can be specified multiple times, and multiple key-value pairs can
 
 example:
     
-    rb -n 1 -m POST --form=k:v,k1:v1 --form=k2:v2 http://127.0.0.1:54326/post-form
+    rsb -n 1 -m POST --form=k:v,k1:v1 --form=k2:v2 http://127.0.0.1:54326/post-form
 
 ## MULTIPART BODY
 
@@ -105,7 +105,7 @@ through `--mp` and specify the file to be uploaded through `--mp-file`.
 
 example:
     
-    rb -n 1 -m POST --mp-file=f1:LICENSE,rb:target/debug/rb.exe --mp=k1:v1 http://127.0.0.1:54326/upload-file
+    rsb -n 1 -m POST --mp-file=f1:LICENSE,rsb:target/debug/rsb.exe --mp=k1:v1 http://127.0.0.1:54326/upload-file
 
 ## CLIENT CERTIFICATE
 
@@ -114,7 +114,7 @@ certificate and key respectively.
 
 example:
 
-    rb -n 500 -l --cert client.pem --key client-key.pem  https://127.0.0.1:9443/hello
+    rsb -n 500 -l --cert client.pem --key client-key.pem  https://127.0.0.1:9443/hello
 
 You can refer to the following Go code to generate and start an https server for testing：
 
