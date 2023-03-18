@@ -13,7 +13,7 @@ contribution. On the other hand, this tool was developed primarily to learn and 
 If you are a Rust developer，and you have already installed Rust-related toolchains locally, you can install them 
 through Cargo.
 
-    cargo install --git https://github.com/gamelife1314/rsb
+    cargo install rsb
 
 Or you can go [Release Page](https://github.com/gamelife1314/rsb/releases) to download the compiled version for the 
 corresponding platform.

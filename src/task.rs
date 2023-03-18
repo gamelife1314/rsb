@@ -255,7 +255,6 @@ impl Task {
         let rt = runtime::Builder::new_multi_thread()
             .worker_threads(num_cpus::get())
             .thread_name("rsb-tokio-runtime-worker")
-            .unhandled_panic(runtime::UnhandledPanic::ShutdownRuntime)
             .enable_all()
             .build()?;
 
