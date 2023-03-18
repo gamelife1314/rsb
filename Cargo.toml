@@ -1,0 +1,46 @@
+[package]
+name = "rb"
+version = "0.1.0"
+edition = "2021"
+authors = ["MichaelFu <michael.fudenglong@qq.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/gamelife1314/rb"
+repository = "https://github.com/gamelife1314/rb"
+keywords = ["rb", "benchmark", "http"]
+categories = ["command-line-utilities"]
+description = "a http server benchmark tool, written in rust."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = {version = "1.0.69", features = ["backtrace", "std"]}
+bytes = "1.4.0"
+clap = { version = "4.1.8", features = ["derive", "cargo", "help", "string"] }
+clap_complete = "4.1.4"
+env_logger = "0.10.0"
+log = "0.4.17"
+mime_guess = "2.0.4"
+reqwest = {version = "0.11.14", features = ["default-tls", "native-tls", "stream", "json", "multipart", "socks"]}
+tokio = {version = "1.26.0", features = ["time", "rt", "rt-multi-thread", "sync", "signal"]}
+tokio-util = {version = "0.7.7", features = ["codec"]}
+governor = "0.5.1"
+async-trait = "0.1.66"
+num_cpus = "1.15.0"
+num = "0.4.0"
+indicatif = {version = "0.17.3", features = ["tokio"]}
+serde_json = "1.0.94"
+serde = {version = "1.0.156", features = ["derive"]}
+colored = "2.0.0"
+concolor-clap = "0.1.0"
+
+
+[[bin]]
+name = "rb"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
