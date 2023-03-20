@@ -4,11 +4,9 @@ permissions:
   contents: "write"
 
 on:
-  workflow_run:
-    workflows: [ "Tag" ]
-    types: [ completed ]
-    branches:
-      - 'main'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   get-tag:
