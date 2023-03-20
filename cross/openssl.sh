@@ -18,24 +18,26 @@ main() {
     local purge_list=()
     # shellcheck disable=SC2068
     for dep in ${dependencies[@]}; do
-        if ! dpkg -L $dep; then
-            apt-get install --no-install-recommends -y $dep
+        if ! dpkg -L "$dep"; then
+            apt-get install --no-install-recommends -y "$dep"
+            # shellcheck disable=SC2206
             purge_list+=( $dep )
         fi
     done
 
     td=$(mktemp -d)
 
-    pushd $td
+    pushd "$td"
     curl https://www.openssl.org/source/openssl-$version.tar.gz | \
         tar --strip-components=1 -xz
     # shellcheck disable=SC2068
     AR=${triple}ar CC=${triple}gcc ./Configure \
       --prefix=/openssl \
       no-dso \
-      $os \
+      "$os" \
       -fPIC \
       ${@:3}
+    # shellcheck disable=SC2046
     nice make -j$(nproc)
     make install
 
@@ -45,8 +47,8 @@ main() {
 
     popd
 
-    rm -rf $td
-    rm $0
+    rm -rf "$td"
+    rm "$0"
 }
 
 main "${@}"

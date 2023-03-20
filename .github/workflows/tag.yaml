@@ -15,13 +15,21 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Get latest commit msg"
+        id: "get-latest-commit-msg"
+        shell: "bash"
+        run: |
+          echo LATEST_COMMIT_MSG=$(git log -1 --pretty=%B) >> $GITHUB_OUTPUT
+
       - name: "Get tag"
         id: "get-tag"
         shell: "bash"
+#        if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
         run: |
           echo PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml) >> $GITHUB_OUTPUT
 
       - name: "Set Tag"
         shell: "bash"
+#        if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
         run: |
           git tag v${{ steps.get-tag.outputs.PKG_VERSION }} && git push --tags
