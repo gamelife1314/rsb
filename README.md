@@ -77,7 +77,7 @@ example:
 
     rsb -n 100 --text-body "anything" http://127.0.0.1:8000/post-text
     // or
-    rsb -n 1 -m POST --text-body "chatgpt4.0 is comming and very strong" http://127.0.0.1:54326/post-text
+    rsb -n 1 -m POST --text-body "chatgpt4.0 is coming and very strong" http://127.0.0.1:54326/post-text
 
 ## JSON BODY
 
