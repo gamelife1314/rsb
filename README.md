@@ -50,6 +50,17 @@ the current request. Exit directly and output the current statistics.
 
 ![rsb-cancel](./assets/cancel.gif)
 
+## Glossary
+
+| Item                   | Description                                                                                                                                   |
+|:-----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+| `Reqs/Sec`             | Count the requests sent and received responses per second, and then calculate the average, maximum, and standard deviation.                   |
+| `Latency`              | Record the time taken for each request from sending to receiving the response, and then calculate the average, maximum and standard deviation |
+| `Latency Distribution` | Sort the time consumption of each request, and then take out the data under each percentage to calculate its average.                         |
+| `HTTP codes`           | Quantity statistics of various response codes                                                                                                 |
+| `Throughput`           | Throughput is obtained by dividing the number of concurrency and the average request time, and the unit is: reqs/s                            |
+
+
 ## Header
 
 Custom request headers can be specified via the `-H` parameter, example: `-H=k:v,k1:v1`. It should be noted that if 
