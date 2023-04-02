@@ -19,8 +19,6 @@ through Cargo.
 Or you can go [Release Page](https://github.com/gamelife1314/rsb/releases) to download the compiled version for the 
 corresponding platform. If docker is installed, you can directly use the compiled docker image
 
-    docker pull ghcr.io/gamelife1314/rsb
-    // and run as follows：
     // image from github container registry
     docker run --rm ghcr.io/gamelife1314/rsb -n 50 -l -c 10  https://httpbin.org
     // image from docker hub
