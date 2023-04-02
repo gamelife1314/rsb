@@ -1,3 +1,7 @@
+# v0.1.6 - 2023-04-02
+
+add docker image to ghcr.io.
+
 # v0.1.5 - 2023-03-19
 
 compared with the previous version, no code changes have been made, but a corresponding code scanning tool has been added to the warehouse.
