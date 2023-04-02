@@ -17,7 +17,11 @@ through Cargo.
     cargo install rsb
 
 Or you can go [Release Page](https://github.com/gamelife1314/rsb/releases) to download the compiled version for the 
-corresponding platform.
+corresponding platform. If docker is installed, you can directly use the compiled docker image
+
+    docker pull ghcr.io/gamelife1314/rsb
+    // and run as follows：
+    docker run ghcr.io/gamelife1314/rsb -n 50 -l -c 10  https://httpbin.org
 
 If you want to use the automatic completion function of the shell, you can output the completion script corresponding 
 to the shell through a command similar to the following. `rsb` supports `bash`, `elvish`, `fish`, `powershell`, and `zsh`.
