@@ -3,7 +3,7 @@ name: "Tag"
 on:
   push:
     branches:
-      - "feature/add-packages"
+      - "main"
 
 jobs:
   create-tag:

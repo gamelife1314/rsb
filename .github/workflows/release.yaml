@@ -9,7 +9,7 @@ on:
     workflows: [ "Tag" ]
     types: [ completed ]
     branches:
-      - 'feature/add-packages'
+      - 'main'
 
 env:
   REGISTRY: ghcr.io
@@ -95,7 +95,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     needs:
       - "get-tag"
-      - "upload-assets"
+#      - "upload-assets"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
@@ -119,5 +119,6 @@ jobs:
         with:
           context: .
           push: true
+          file: docker/alpine.Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
