@@ -21,7 +21,10 @@ corresponding platform. If docker is installed, you can directly use the compile
 
     docker pull ghcr.io/gamelife1314/rsb
     // and run as follows：
-    docker run ghcr.io/gamelife1314/rsb -n 50 -l -c 10  https://httpbin.org
+    // image from github container registry
+    docker run --rm ghcr.io/gamelife1314/rsb -n 50 -l -c 10  https://httpbin.org
+    // image from docker hub
+    docker run --rm gamelife1314/rsb -n 50 -l -c 10  https://httpbin.org
 
 If you want to use the automatic completion function of the shell, you can output the completion script corresponding 
 to the shell through a command similar to the following. `rsb` supports `bash`, `elvish`, `fish`, `powershell`, and `zsh`.
