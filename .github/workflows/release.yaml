@@ -2,13 +2,18 @@ name: "Release"
 
 permissions:
   contents: "write"
+  packages: "write"
 
 on:
   workflow_run:
     workflows: [ "Tag" ]
     types: [ completed ]
     branches:
-      - 'main'
+      - 'feature/add-packages'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   get-tag:
@@ -84,3 +89,35 @@ jobs:
           archive: $bin-${{ matrix.target }}
           ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  push-to-registry:
+    name: "Push Docker image"
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs:
+      - "get-tag"
+      - "upload-assets"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@v3
+
+      - name: "Log in to the container registry"
+        uses: "docker/login-action@v2"
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Extract metadata (tags, labels) for Docker"
+        id: "meta"
+        uses: "docker/metadata-action@v4"
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: "Build and push Docker image"
+        uses: "docker/build-push-action@v3"
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
