@@ -24,11 +24,7 @@ jobs:
       - name: "Get tag"
         id: "get-tag"
         shell: "bash"
-<<<<<<< Updated upstream
-#        if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
-=======
         if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
->>>>>>> Stashed changes
         run: |
           echo PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml) >> $GITHUB_OUTPUT
 
