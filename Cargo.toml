@@ -29,7 +29,7 @@ async-trait = "0.1.68"
 num_cpus = "1.15.0"
 num = "0.4.0"
 indicatif = {version = "0.17.3", features = ["tokio"]}
-serde_json = "1.0.94"
+serde_json = "1.0.95"
 serde = {version = "1.0.158", features = ["derive"]}
 colored = "2.0.0"
 concolor-clap = "0.1.0"
