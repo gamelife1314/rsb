@@ -6,6 +6,7 @@ use clap_complete::generate;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use rsb::{arg::OutputFormat, Arg, Task};
 
+#[cfg(not(tarpaulin_include))]
 fn create_count_progress_bar(arg: &Arg) -> ProgressBar {
     let pb = ProgressBar::new(arg.requests.unwrap());
     pb.set_style(
@@ -31,6 +32,7 @@ fn create_count_progress_bar(arg: &Arg) -> ProgressBar {
     pb
 }
 
+#[cfg(not(tarpaulin_include))]
 fn create_duration_progress_bar(arg: &Arg) -> ProgressBar {
     let pb = ProgressBar::new(arg.duration.unwrap().as_secs());
     pb.set_style(
@@ -52,6 +54,7 @@ fn create_duration_progress_bar(arg: &Arg) -> ProgressBar {
     pb
 }
 
+#[cfg(not(tarpaulin_include))]
 fn create_progress_bar(arg: &Arg) -> ProgressBar {
     if arg.requests.is_some() {
         create_count_progress_bar(arg)
@@ -60,6 +63,7 @@ fn create_progress_bar(arg: &Arg) -> ProgressBar {
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 fn print_tip(arg: &Arg) -> anyhow::Result<()> {
     if arg.requests.is_some() {
         writeln!(
@@ -83,6 +87,7 @@ fn print_tip(arg: &Arg) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(not(tarpaulin_include))]
 fn main() -> anyhow::Result<()> {
     env_logger::init();
     let arg = Arg::parse();

@@ -34,7 +34,7 @@ For example:
 
 First, let's take a look at the overall picture of this tool:
 
-![rsb --help](./assets/rsb-help.png)
+![rsb --help](resources/assets/rsb-help.png)
 
 The tool has two modes when running, which must be specified when using it. One is based on the total amount, that is, 
 you need to declare how many requests you need to send in total, which can be specified by the `-n` parameter. The other 
@@ -43,17 +43,17 @@ the unit is seconds.
 
 First, let's look at the example of specifying the total amount：
 
-![rsb -n url](./assets/basic.gif)
+![rsb -n url](resources/assets/basic.gif)
 
 Let's look at another example of specifying the test duration:
 
-![rsb -d url](./assets/duration.gif)
+![rsb -d url](resources/assets/duration.gif)
 
 During use, we usually encounter too many specified numbers, or the specified test time is too long. When you want to 
 cancel in the middle, you can cancel it directly through `ctrl-c`. After the tool receives the signal, it will complete 
 the current request. Exit directly and output the current statistics.
 
-![rsb-cancel](./assets/cancel.gif)
+![rsb-cancel](resources/assets/cancel.gif)
 
 ## Glossary
 
