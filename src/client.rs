@@ -53,3 +53,101 @@ pub(crate) fn build_client(arg: &Arg) -> anyhow::Result<Client> {
         Err(e) => Err(Box::new(e).into()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::env;
+    use std::ffi::OsStr;
+    use std::path::Path;
+
+    use clap::{CommandFactory, FromArgMatches};
+
+    use super::*;
+    const URI: &str = "https://localhost/test";
+    const BINARY: &str = "rsb";
+
+    #[test]
+    fn test_build_client_success() {
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_ok());
+    }
+
+    #[test]
+    fn test_build_client_with_custom_headers_success() {
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", "--headers=k3:v3", URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_ok());
+    }
+
+    #[test]
+    fn test_build_client_with_invalid_custom_headers_success() {
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", "--headers=k3", URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_ok());
+    }
+
+    #[test]
+    fn test_build_client_disable_keep_alive() {
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", "-a", URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_ok());
+    }
+
+    #[test]
+    fn test_build_client_with_client_cert() {
+        let root = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let tests = Path::new(OsStr::new(root.as_str()))
+            .join("resources")
+            .join("tests");
+        let binding = tests.join("client.pem");
+        let cert = binding.to_str().unwrap();
+
+        let binding = tests.join("client-key.pem");
+        let key = binding.to_str().unwrap();
+
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", "--cert", cert, "--key", key, URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_ok());
+    }
+
+    #[test]
+    fn test_build_client_with_invalid_client_cert() {
+        let cert = file!();
+        let key = file!();
+
+        let mut cmd = Arg::command();
+        let args = vec![BINARY, "-n", "20", "--cert", cert, "--key", key, URI];
+        let mut result = cmd.try_get_matches_from_mut(args);
+        assert!(result.as_ref().is_ok());
+
+        let arg = Arg::from_arg_matches_mut(result.as_mut().unwrap()).unwrap();
+        let client = build_client(&arg);
+        assert!(client.as_ref().is_err());
+    }
+}
