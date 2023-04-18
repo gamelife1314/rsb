@@ -99,6 +99,8 @@ fn main() -> anyhow::Result<()> {
         std::process::exit(0);
     }
 
+    rlimit::increase_nofile_limit(u64::MAX).unwrap();
+
     print_tip(&arg)?;
     let pb = create_progress_bar(&arg);
     let output_format = arg.output_format;

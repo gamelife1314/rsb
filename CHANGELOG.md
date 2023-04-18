@@ -1,3 +1,7 @@
+# v0.1.7 - 2023-04-18
+
+:wave::wave::wave:, Fix too many open files in unix system. 
+
 # v0.1.6 - 2023-04-02
 
 add docker image to ghcr.io.
