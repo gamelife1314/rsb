@@ -1,3 +1,7 @@
+# v0.1.8 - 2023-06-17
+
+Update Dependencies.
+
 # v0.1.7 - 2023-04-18
 
 :wave::wave::wave:, Fix too many open files in unix system. 
