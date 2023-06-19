@@ -23,7 +23,7 @@ log = "0.4.17"
 mime_guess = "2.0.4"
 reqwest = {version = "0.11.15", features = ["default-tls", "native-tls", "stream", "json", "multipart", "socks"]}
 tokio = {version = "1.28.2", features = ["time", "rt", "rt-multi-thread", "sync", "signal"]}
-tokio-util = {version = "0.7.7", features = ["codec"]}
+tokio-util = {version = "0.7.8", features = ["codec"]}
 governor = "0.5.1"
 async-trait = "0.1.68"
 num_cpus = "1.15.0"
