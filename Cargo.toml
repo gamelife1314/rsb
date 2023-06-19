@@ -14,7 +14,7 @@ description = "a http server benchmark tool, written in rust."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = {version = "1.0.70", features = ["backtrace", "std"]}
+anyhow = {version = "1.0.71", features = ["backtrace", "std"]}
 bytes = "1.4.0"
 clap = { version = "4.3.3", features = ["derive", "cargo", "help", "string"] }
 clap_complete = "4.3.1"
