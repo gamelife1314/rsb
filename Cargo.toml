@@ -1,6 +1,6 @@
 [package]
 name = "rsb"
-version = "0.1.9"
+version = "0.1.10"
 edition = "2021"
 authors = ["MichaelFu <michael.fudenglong@qq.com>"]
 license = "MIT"
@@ -35,6 +35,8 @@ colored = "2.0.0"
 concolor-clap = "0.1.0"
 rlimit = "0.9.1"
 
+[target.'cfg(unix)'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
 
 [[bin]]
 name = "rsb"

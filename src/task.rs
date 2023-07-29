@@ -77,7 +77,7 @@ fn create_duration_dispatcher(
 fn create_dispatcher(
     arg: &Arg,
 ) -> Arc<tsync::RwLock<Box<dyn Dispatcher<Limiter = Limiter>>>> {
-    let dispatcher = if arg.requests.is_some() {
+    if arg.requests.is_some() {
         Arc::new(tsync::RwLock::new(create_count_dispatcher(
             arg.requests.unwrap(),
             &arg.rate,
@@ -87,8 +87,7 @@ fn create_dispatcher(
             arg.duration.unwrap(),
             &arg.rate,
         )))
-    };
-    dispatcher
+    }
 }
 
 impl Task {
