@@ -1,3 +1,7 @@
+# v0.1.10 - 2023-07-30
+
+static link everything on unix platform.
+
 # v0.1.9 - 2023-06-26
 
 Update Dependencies.
