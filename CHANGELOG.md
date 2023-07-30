@@ -1,4 +1,8 @@
-# v0.1.11 - 2023-07-30
+# v0.1.12 - 2023-07-30
+
+update dependency and slim docker images.
+
+# v0.1.12 - 2023-07-30
 
 static link everything on unix platform.
 

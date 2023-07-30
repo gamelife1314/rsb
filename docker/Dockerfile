@@ -10,7 +10,12 @@ COPY . .
 
 RUN cargo install --path .
 
-FROM rust:latest
+FROM debian:bullseye-slim
+
+#RUN sed -i 's@deb.debian.org@repo.huaweicloud.com@g' /etc/apt/sources.list && apt update \
+#    && apt-get install -y apt-transport-https ca-certificates
+
+#RUN apt-get update && apt-get install -y extra-runtime-dependencies && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /usr/local/cargo/bin/rsb /usr/local/bin/rsb
 
