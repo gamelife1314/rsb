@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use anyhow::anyhow;
+use async_process::{Command, Stdio};
 use bytes::Bytes;
 use reqwest::{multipart, Body, Client, Request, RequestBuilder};
 use tokio::{self, fs as tfs};
@@ -63,6 +65,32 @@ async fn set_request_json_body(
         let file = tfs::File::open(json_file).await?;
         builder = builder
             .body(file)
+            .header("Content-Type", "application/json; charset=UTF-8");
+    }
+
+    if let Some(json_command) = &arg.json_command {
+        let inputs: Vec<&str> = json_command.split(" ").collect();
+        let inputs: Vec<&&str> =
+            inputs.iter().filter(|&&x| !x.is_empty()).collect();
+
+        if inputs.is_empty() {
+            anyhow::bail!(anyhow!("invalid json command"))
+        }
+
+        let mut cmd = Command::new(inputs[0]);
+        cmd.stdin(Stdio::null());
+        for arg in &inputs[1..] {
+            cmd.arg(arg);
+        }
+        let output = cmd.output().await?;
+        if !output.status.success() {
+            anyhow::bail!(anyhow!(format!(
+                "external command execute failed, exit code: {}",
+                output.status
+            )))
+        }
+        builder = builder
+            .body(output.stdout)
             .header("Content-Type", "application/json; charset=UTF-8");
     }
 

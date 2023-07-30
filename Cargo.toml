@@ -1,6 +1,6 @@
 [package]
 name = "rsb"
-version = "0.1.12"
+version = "0.2.0"
 edition = "2021"
 authors = ["MichaelFu <michael.fudenglong@qq.com>"]
 license = "MIT"
@@ -34,6 +34,7 @@ serde = {version = "1.0.164", features = ["derive"]}
 colored = "2.0.4"
 concolor-clap = "0.1.0"
 rlimit = "0.9.1"
+async-process = "1.7.0"
 
 [target.'cfg(unix)'.dependencies]
 openssl = { version = "0.10", features = ["vendored"] }

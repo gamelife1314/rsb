@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/gamelife1314/rsb/workflows/CI/badge.svg)](https://github.com/gamelife1314/rsb/actions)
 [![License MIT](https://img.shields.io/badge/liccense-MIT-green?style=flat&logo=PowerShell)](https://github.com/gamelife1314/rsb/blob/main/LICENSE)
 [![Codecov](https://codecov.io/gh/gamelife1314/rsb/branch/main/graph/badge.svg)](https://app.codecov.io/gh/gamelife1314/rsb)
-[![Crates.io](https://img.shields.io/badge/crates.io-v0.1.12-blue)](https://crates.io/crates/rsb)
+[![Crates.io](https://img.shields.io/badge/crates.io-v0.2.0-blue)](https://crates.io/crates/rsb)
 
 `rsb` is a http server benchmark tool written in rust. The development of this tool is mainly inspired 
 by the [`bombardier`](https://github.com/codesenberg/bombardier) project, and I would like to thank the author for his 
@@ -105,6 +105,9 @@ example:
     rsb -n 1 -m POST --json-body '{"version":"v0.1.0","name":"rsb"}' http://127.0.0.1:54326/post-json
     // or
     rsb -n 1 -m POST --json-file json.txt http://127.0.0.1:54326/post-json
+    // or build json body from external command, this will call rsbg program to generate request body
+    cargo run -- -c 50 -t 5s -n 5000 -l --json-command "rsbg hello world xxx 1" -m POST  http://127.0.0.1:5302/hello
+    
 
 ## FORM BODY
 
