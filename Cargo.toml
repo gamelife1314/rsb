@@ -1,6 +1,6 @@
 [package]
 name = "rsb"
-version = "0.1.9"
+version = "0.2.0"
 edition = "2021"
 authors = ["MichaelFu <michael.fudenglong@qq.com>"]
 license = "MIT"
@@ -16,25 +16,28 @@ description = "a http server benchmark tool, written in rust."
 [dependencies]
 anyhow = {version = "1.0.71", features = ["backtrace", "std"]}
 bytes = "1.4.0"
-clap = { version = "4.3.3", features = ["derive", "cargo", "help", "string"] }
+clap = { version = "4.3.19", features = ["derive", "cargo", "help", "string"] }
 clap_complete = "4.3.1"
 env_logger = "0.10.0"
 log = "0.4.19"
 mime_guess = "2.0.4"
 reqwest = {version = "0.11.18", features = ["default-tls", "native-tls", "stream", "json", "multipart", "socks"]}
-tokio = {version = "1.28.2", features = ["time", "rt", "rt-multi-thread", "sync", "signal"]}
+tokio = {version = "1.29.1", features = ["time", "rt", "rt-multi-thread", "sync", "signal"]}
 tokio-util = {version = "0.7.8", features = ["codec"]}
 governor = "0.5.1"
-async-trait = "0.1.68"
-num_cpus = "1.15.0"
+async-trait = "0.1.72"
+num_cpus = "1.16.0"
 num = "0.4.0"
 indicatif = {version = "0.17.5", features = ["tokio"]}
-serde_json = "1.0.96"
+serde_json = "1.0.103"
 serde = {version = "1.0.164", features = ["derive"]}
-colored = "2.0.0"
+colored = "2.0.4"
 concolor-clap = "0.1.0"
 rlimit = "0.9.1"
+async-process = "1.7.0"
 
+[target.'cfg(unix)'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
 
 [[bin]]
 name = "rsb"

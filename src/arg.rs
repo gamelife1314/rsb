@@ -272,7 +272,7 @@ pub struct Arg {
     #[arg(
         long,
         value_hint = ValueHint::FilePath,
-        conflicts_with_all(["mp_file", "mp", "form", "text_body", "text_file", "json_body"]),
+        conflicts_with_all(["mp_file", "mp", "form", "text_body", "text_file", "json_body", "json_command"]),
         help = "File to use as Request body for ContentType: application/json"
     )]
     pub(crate) json_file: Option<PathBuf>,
@@ -280,9 +280,16 @@ pub struct Arg {
     /// JSON request body
     #[arg(
         long,
-        conflicts_with_all(["mp_file", "mp", "form", "text_body", "text_file", "json_file"]),
+        conflicts_with_all(["mp_file", "mp", "form", "text_body", "text_file", "json_file", "json_command"]),
         help = "Request body for ContentType: application/json")]
     pub(crate) json_body: Option<String>,
+
+    /// JSON request body
+    #[arg(
+    long,
+    conflicts_with_all(["mp_file", "mp", "form", "text_body", "text_file", "json_file", "json_body"]),
+    help = "Build request body from external command for ContentType: application/json")]
+    pub(crate) json_command: Option<String>,
 
     /// File to use as text request Body
     #[arg(
@@ -520,6 +527,32 @@ mod tests {
             "--text-body",
             "--text-file",
             "--json-file",
+            "--json-command",
+        ];
+        validate_args_conflict(conflicts_params, args, cmd);
+    }
+
+    #[test]
+    fn test_json_command_conflicts_with_other_body() {
+        let cmd = Arg::command();
+        let args = vec![
+            BINARY,
+            "-n",
+            "20",
+            "--json-command",
+            "/usr/bin/command generate",
+            "xx",
+            "xx",
+            URI,
+        ];
+        let conflicts_params = vec![
+            "--mp-file",
+            "--mp",
+            "--form",
+            "--text-body",
+            "--text-file",
+            "--json-file",
+            "--json-body",
         ];
         validate_args_conflict(conflicts_params, args, cmd);
     }
@@ -536,6 +569,7 @@ mod tests {
             "--text-body",
             "--text-file",
             "--json-body",
+            "--json-command",
         ];
         validate_args_conflict(conflicts_params, args, cmd);
     }
@@ -626,6 +660,7 @@ mod tests {
             "--text-body",
             "--json-file",
             "--json-body",
+            "--json-command",
         ];
         validate_args_conflict(conflicts_params, args, cmd);
     }
@@ -683,6 +718,7 @@ mod tests {
             "--text-body",
             "--json-file",
             "--json-body",
+            "--json-command",
         ];
         validate_args_conflict(conflicts_params, args, cmd);
     }
@@ -737,6 +773,7 @@ mod tests {
             "--text-body",
             "--json-file",
             "--json-body",
+            "--json-command",
         ];
         validate_args_conflict(conflicts_params, args, cmd);
     }

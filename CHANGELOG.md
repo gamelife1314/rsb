@@ -1,3 +1,19 @@
+# v0.2.0 - 2023-07-30
+
+build json request body from external command.
+
+# v0.1.12 - 2023-07-30
+
+update dependency and slim docker images.
+
+# v0.1.11 - 2023-07-30
+
+static link everything on unix platform.
+
+# v0.1.10 - 2023-07-30
+
+static link everything on unix platform.
+
 # v0.1.9 - 2023-06-26
 
 Update Dependencies.
