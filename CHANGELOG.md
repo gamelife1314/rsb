@@ -1,3 +1,7 @@
+# v0.2.1 - 2023-10-30
+
+Update Dependencies.
+
 # v0.2.0 - 2023-07-30
 
 build json request body from external command.
