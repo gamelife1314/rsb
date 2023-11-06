@@ -15,7 +15,7 @@ description = "a http server benchmark tool, written in rust."
 
 [dependencies]
 anyhow = {version = "1.0.71", features = ["backtrace", "std"]}
-bytes = "1.4.0"
+bytes = "1.5.0"
 clap = { version = "4.3.19", features = ["derive", "cargo", "help", "string"] }
 clap_complete = "4.3.1"
 env_logger = "0.10.0"
