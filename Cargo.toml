@@ -34,7 +34,7 @@ serde = {version = "1.0.189", features = ["derive"]}
 colored = "2.0.4"
 concolor-clap = "0.1.0"
 rlimit = "0.10.1"
-async-process = "1.7.0"
+async-process = "2.0.1"
 
 [target.'cfg(unix)'.dependencies]
 openssl = { version = "0.10.57", features = ["vendored"] }
