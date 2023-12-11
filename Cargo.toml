@@ -37,7 +37,7 @@ rlimit = "0.10.1"
 async-process = "1.7.0"
 
 [target.'cfg(unix)'.dependencies]
-openssl = { version = "0.10.57", features = ["vendored"] }
+openssl = { version = "0.10.61", features = ["vendored"] }
 
 [[bin]]
 name = "rsb"
