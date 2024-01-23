@@ -1,6 +1,6 @@
 [package]
 name = "rsb"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["MichaelFu <michael.fudenglong@qq.com>"]
 license = "MIT"

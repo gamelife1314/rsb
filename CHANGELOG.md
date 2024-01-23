@@ -1,3 +1,7 @@
+# v0.2.2 - 2024-01-24
+
+Fix: docker images is broken.
+
 # v0.2.1 - 2023-10-30
 
 Update Dependencies.
