@@ -30,8 +30,8 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use tokio::runtime;
 
-use crate::statistics::Statistics;
 use crate::Arg;
+use crate::statistics::Statistics;
 
 /// the [Output] after executing the task, copied from the statistical results
 #[derive(Debug, Deserialize, Serialize)]
@@ -251,7 +251,10 @@ pub(crate) async fn text_output(
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use super::*;
+    use crate::arg::{Method, OutputFormat};
 
     #[test]
     fn test_micros_convert() {
@@ -266,5 +269,60 @@ mod tests {
         let duration = Duration::from_millis(1);
         let micros = Micros::from(duration);
         assert_eq!("1.00ms", format!("{micros}"));
+    }
+
+    #[test]
+    fn test_latency_new() {
+        let latency = Latency::new(0.5, Micros(1000));
+        assert_eq!(latency.percent, 0.5);
+        assert_eq!(latency.micros.0, 1000);
+    }
+
+    #[test]
+    fn test_output_from_statistics() {
+        let stats = Statistics::new();
+        let rt = runtime::Builder::new_current_thread().build().unwrap();
+
+        rt.block_on(async {
+            let output = Output::from_statistics(&stats).await;
+            assert_eq!(output.rsp1xx, 0);
+            assert_eq!(output.rsp2xx, 0);
+        });
+    }
+
+    #[test]
+    fn test_sync_text_output() {
+        let stats = Statistics::new();
+        let arg = Arg {
+            url: Some("http://example.com".to_string()),
+            requests: Some(10),
+            connections: 1,
+            timeout: Duration::from_secs(30),
+            latencies: false,
+            percentiles: vec![],
+            method: Method::Get,
+            disable_keep_alive: false,
+            headers: vec![],
+            duration: None,
+            rate: None,
+            cert: None,
+            key: None,
+            insecure: false,
+            text_file: None,
+            text_body: None,
+            json_file: None,
+            json_body: None,
+            json_command: None,
+            form: vec![],
+            mp: vec![],
+            mp_file: vec![],
+            output_format: OutputFormat::Text,
+            completions: None,
+        };
+
+        let result = sync_text_output(&stats, &arg);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        assert!(output.contains("Statistics"));
     }
 }

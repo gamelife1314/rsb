@@ -1,20 +1,50 @@
-name: coverage
+# 工作流名称
+name: Code Coverage
 
-on:                             [push]
+# 触发条件：push到main/master分支、提交PR到main/master分支
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+# 定义任务
 jobs:
-  test:
-    name:                       coverage
-    runs-on:                    ubuntu-latest
-    container:
-      image:                    xd009642/tarpaulin:develop-nightly
-      options:                  --security-opt seccomp=unconfined
+  coverage:
+    # 运行环境（Ubuntu最新版）
+    runs-on: ubuntu-latest
+    # 任务超时时间（按需调整）
+    timeout-minutes: 30
+
     steps:
-      - name:                   Checkout repository
-        uses:                   actions/checkout@v2
+      # 1. 拉取仓库代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name:                   Generate code coverage
+      # 2. 安装Rust环境（指定稳定版）
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # 安装必要的组件（用于覆盖率统计）
+          components: llvm-tools-preview
+
+      # 3. 安装cargo-tarpaulin（覆盖率工具）
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      # 4. 生成覆盖率报告（支持单元测试+集成测试）
+      - name: Generate coverage report
         run: |
-          cargo +nightly tarpaulin --verbose --all-features --workspace --timeout 120 --out Xml
+          cargo tarpaulin --all-features --verbose --workspace --out xml --output-dir ./coverage --timeout 1200       
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+      # 5. 上传覆盖率报告到Codecov（可视化展示）
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          # Codecov的仓库令牌（需在GitHub Secrets中配置CODECOV_TOKEN）
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # 覆盖率报告路径
+          file: ./coverage/cobertura.xml
+          # 提交信息（便于定位）
+          fail_ci_if_error: true  # 上传失败时标记CI失败
+          verbose: true

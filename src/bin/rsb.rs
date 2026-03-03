@@ -4,7 +4,7 @@ use std::sync::Arc;
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 use indicatif::{ProgressBar, ProgressState, ProgressStyle};
-use rsb::{arg::OutputFormat, Arg, Task};
+use rsb::{Arg, Task, arg::OutputFormat};
 
 #[cfg(not(tarpaulin_include))]
 fn create_count_progress_bar(arg: &Arg) -> ProgressBar {
@@ -65,22 +65,22 @@ fn create_progress_bar(arg: &Arg) -> ProgressBar {
 
 #[cfg(not(tarpaulin_include))]
 fn print_tip(arg: &Arg) -> anyhow::Result<()> {
-    if arg.requests.is_some() {
+    if let Some(requests) = arg.requests {
         writeln!(
             &mut io::stdout(),
             "{:?} {:?} with {} requests using {} connections",
             arg.method,
             arg.url.clone().unwrap(),
-            arg.requests.unwrap(),
+            requests,
             arg.connections
         )?;
-    } else if arg.duration.is_some() {
+    } else if let Some(duration) = arg.duration {
         writeln!(
             &mut io::stdout(),
             "{:?} {:?} with for {:?} using {} connections",
             arg.method,
             arg.url.clone().unwrap(),
-            arg.duration.unwrap(),
+            duration,
             arg.connections
         )?;
     }

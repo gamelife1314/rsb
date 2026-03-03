@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use async_process::{Command, Stdio};
 use bytes::Bytes;
-use reqwest::{multipart, Body, Client, Request, RequestBuilder};
+use reqwest::{Body, Client, Request, RequestBuilder, multipart};
 use tokio::{self, fs as tfs};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
@@ -157,4 +157,319 @@ async fn set_request_multipart_body(
     }
 
     Ok(builder)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+    use crate::arg::{Method, OutputFormat};
+
+    #[tokio::test]
+    async fn test_set_request_text_body_with_body() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_text_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                text_body: Some("test body".to_string()),
+                text_file: None,
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                form: vec![],
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_text_body_without_body() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_text_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                text_body: None,
+                text_file: None,
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                form: vec![],
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_json_body_with_body() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_json_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                json_body: Some("{\"key\":\"value\"}".to_string()),
+                json_file: None,
+                json_command: None,
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                form: vec![],
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_json_body_without_body() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_json_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                json_body: None,
+                json_file: None,
+                json_command: None,
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                form: vec![],
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_form_body_with_params() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_form_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                form: vec![
+                    "key1:value1".to_string(),
+                    "key2:value2".to_string(),
+                ],
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_form_body_without_params() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_form_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                form: vec![],
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                mp: vec![],
+                mp_file: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_multipart_body_with_params() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_multipart_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                mp: vec!["key1:value1".to_string()],
+                mp_file: vec![],
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                form: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_set_request_multipart_body_without_params() {
+        let client = Client::new();
+        let builder =
+            client.request(reqwest::Method::GET, "http://example.com");
+        let result = set_request_multipart_body(
+            &Arg {
+                url: Some("http://example.com".to_string()),
+                mp: vec![],
+                mp_file: vec![],
+                connections: 1,
+                timeout: Duration::from_secs(30),
+                latencies: false,
+                percentiles: vec![],
+                method: Method::Get,
+                disable_keep_alive: false,
+                headers: vec![],
+                requests: Some(10),
+                duration: None,
+                rate: None,
+                cert: None,
+                key: None,
+                insecure: false,
+                text_file: None,
+                text_body: None,
+                json_file: None,
+                json_body: None,
+                json_command: None,
+                form: vec![],
+                output_format: OutputFormat::Text,
+                completions: None,
+            },
+            builder,
+        )
+        .await;
+        assert!(result.is_ok());
+    }
 }

@@ -1,7 +1,6 @@
-#![feature(is_sorted)]
 #![feature(associated_type_defaults)]
 #![deny(missing_docs)]
-#![cfg_attr(feature = "cargo-clippy", allow(clippy::single_char_pattern))]
+#![allow(clippy::single_char_pattern)]
 //! rsb is a http server benchmark tool.
 
 pub mod arg;

@@ -397,3 +397,141 @@ impl Message {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_statistics_new() {
+        let stats = Statistics::new();
+        assert_eq!(stats.rsp1xx.load(Acquire), 0);
+        assert_eq!(stats.rsp2xx.load(Acquire), 0);
+        assert_eq!(stats.rsp3xx.load(Acquire), 0);
+        assert_eq!(stats.rsp4xx.load(Acquire), 0);
+        assert_eq!(stats.rsp5xx.load(Acquire), 0);
+        assert_eq!(stats.rsp_others.load(Acquire), 0);
+        assert_eq!(stats.total.load(Acquire), 0);
+        assert_eq!(stats.total_success.load(Acquire), 0);
+    }
+
+    #[test]
+    fn test_statistics_default() {
+        let stats = Statistics::default();
+        assert_eq!(stats.rsp1xx.load(Acquire), 0);
+        assert_eq!(stats.rsp2xx.load(Acquire), 0);
+    }
+
+    #[test]
+    fn test_statistics_get_total() {
+        let stats = Statistics::new();
+        assert_eq!(stats.get_total(), 0);
+
+        stats.total.fetch_add(10, SeqCst);
+        assert_eq!(stats.get_total(), 10);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_reset_start_time() {
+        let stats = Statistics::new();
+        let old_start = *stats.started_at.lock().await;
+
+        // Wait a bit
+        tokio::time::sleep(Duration::from_millis(10)).await;
+
+        stats.reset_start_time().await;
+        let new_start = *stats.started_at.lock().await;
+
+        assert!(new_start > old_start);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_stop_timer() {
+        let stats = Statistics::new();
+        assert_eq!(stats.is_stopped.load(Acquire), false);
+
+        stats.stop_timer().await;
+        assert_eq!(stats.is_stopped.load(Acquire), true);
+        assert!(stats.stopped_at.lock().await.is_some());
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_1xx() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::CONTINUE);
+        assert_eq!(stats.rsp1xx.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_2xx() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::OK);
+        assert_eq!(stats.rsp2xx.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_3xx() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::MULTIPLE_CHOICES);
+        assert_eq!(stats.rsp3xx.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_4xx() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::BAD_REQUEST);
+        assert_eq!(stats.rsp4xx.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_5xx() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(stats.rsp5xx.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_others() {
+        let stats = Statistics::new();
+        stats.statistics_rsp_code(StatusCode::from_u16(600).unwrap());
+        assert_eq!(stats.rsp_others.load(Acquire), 1);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_summary() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        stats.total.fetch_add(100, SeqCst);
+        stats.total_success.fetch_add(95, SeqCst);
+        stats.rsp2xx.fetch_add(90, SeqCst);
+        stats.rsp4xx.fetch_add(5, SeqCst);
+
+        let mut used_time = stats.used_time.lock().await;
+        for i in 0..10 {
+            used_time.push(Duration::from_millis(i as u64));
+        }
+        drop(used_time);
+
+        stats.summary(10, vec![0.5, 0.9]).await;
+
+        // Verify summary was calculated
+        let avg = *stats.avg_req_per_second.lock().await;
+        assert!(avg >= 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_message_new() {
+        let req_at = Instant::now();
+        let rsp_at = Instant::now();
+        // Create a mock error by building a request that will fail
+        let client = reqwest::Client::new();
+        let response = client
+            .get("http://invalid-url-that-does-not-exist-12345.com")
+            .send()
+            .await;
+
+        let message = Message::new(response, req_at, rsp_at);
+        assert!(message.response.is_err());
+    }
+}

@@ -4,11 +4,11 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use clap::{
+    ArgGroup, Parser, ValueEnum, ValueHint,
     builder::{
         IntoResettable, OsStr, PossibleValue,
         Resettable::{self, *},
     },
-    ArgGroup, Parser, ValueEnum, ValueHint,
 };
 use clap_complete::Shell;
 
@@ -398,8 +398,11 @@ mod tests {
         ]);
         assert!(result.as_ref().is_err());
         let err_msg = result.err().unwrap().to_string();
-        assert!(err_msg
-            .contains("possible values: GET, PUT, POST, DELETE, HEAD, PATCH"));
+        assert!(
+            err_msg.contains(
+                "possible values: GET, PUT, POST, DELETE, HEAD, PATCH"
+            )
+        );
     }
 
     #[test]
@@ -828,20 +831,24 @@ mod tests {
         // given wrong percent, negative
         let args = vec![BINARY, "-n", "20", "--percentiles=-0.1", URI];
         let result = cmd.try_get_matches_from_mut(args);
-        assert!(result
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("-0.1 must be limited to the range (0 to 1)"));
+        assert!(
+            result
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("-0.1 must be limited to the range (0 to 1)")
+        );
 
         // give wrong percent, that's gte 1
         let args = vec![BINARY, "-n", "20", "--percentiles=1", URI];
         let result = cmd.try_get_matches_from_mut(args);
-        assert!(result
-            .err()
-            .unwrap()
-            .to_string()
-            .contains("1 must be limited to the range (0 to 1)"));
+        assert!(
+            result
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("1 must be limited to the range (0 to 1)")
+        );
     }
 
     #[test]

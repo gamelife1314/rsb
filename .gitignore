@@ -8,3 +8,4 @@
 .idea
 *.log
 tarpaulin-report.html
+.codemate

@@ -25,8 +25,8 @@
 //! ```
 
 use std::cmp::min;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use colored::Colorize;
@@ -38,14 +38,14 @@ use tokio::{
     sync::{self as tsync, mpsc},
 };
 
+use crate::Arg;
 use crate::client::build_client;
 use crate::dispatcher::DurationDispatcher;
 use crate::dispatcher::{CountDispatcher, Dispatcher};
 use crate::limiter::Limiter;
-use crate::output::{sync_text_output, Output};
+use crate::output::{Output, sync_text_output};
 use crate::request::build_request;
 use crate::statistics::{Message, Statistics};
-use crate::Arg;
 
 /// [Task] indicates a task to be performed
 pub struct Task {
@@ -77,10 +77,9 @@ fn create_duration_dispatcher(
 fn create_dispatcher(
     arg: &Arg,
 ) -> Arc<tsync::RwLock<Box<dyn Dispatcher<Limiter = Limiter>>>> {
-    if arg.requests.is_some() {
+    if let Some(requests) = arg.requests {
         Arc::new(tsync::RwLock::new(create_count_dispatcher(
-            arg.requests.unwrap(),
-            &arg.rate,
+            requests, &arg.rate,
         )))
     } else {
         Arc::new(tsync::RwLock::new(create_duration_dispatcher(
@@ -159,15 +158,15 @@ impl Task {
     }
 
     fn finish_progress_bar(self: Arc<Self>) {
-        if let Some(progress_bar) = &self.progress_bar {
-            if !progress_bar.is_finished() {
-                if self.is_canceled.load(Ordering::Acquire) {
-                    progress_bar.abandon_with_message(
-                        "(canceled!!!)".to_uppercase().red().bold().to_string(),
-                    );
-                } else {
-                    progress_bar.finish();
-                }
+        if let Some(progress_bar) = &self.progress_bar
+            && !progress_bar.is_finished()
+        {
+            if self.is_canceled.load(Ordering::Acquire) {
+                progress_bar.abandon_with_message(
+                    "(canceled!!!)".to_uppercase().red().bold().to_string(),
+                );
+            } else {
+                progress_bar.finish();
             }
         }
     }
@@ -224,8 +223,8 @@ impl Task {
     ) {
         loop {
             let result = receiver.try_recv();
-            if result.is_ok() {
-                self.statistics.handle_message(result.unwrap()).await;
+            if let Ok(message) = result {
+                self.statistics.handle_message(message).await;
                 continue;
             }
             if self.is_workers_done.load(Ordering::Acquire) {
@@ -330,5 +329,95 @@ impl Task {
         })?;
 
         Ok(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+    use crate::arg::{Method, OutputFormat};
+
+    #[test]
+    fn test_create_count_dispatcher() {
+        let dispatcher = create_count_dispatcher(100, &Some(10));
+        // Just test that it creates without panicking
+        let _ = dispatcher;
+    }
+
+    #[test]
+    fn test_create_duration_dispatcher() {
+        let duration = Duration::from_secs(60);
+        let _dispatcher = create_duration_dispatcher(duration, &Some(10));
+        // Just test that it creates without panicking
+    }
+
+    #[test]
+    fn test_create_dispatcher_with_requests() {
+        let arg = Arg {
+            url: Some("http://example.com".to_string()),
+            requests: Some(100),
+            duration: None,
+            connections: 1,
+            timeout: Duration::from_secs(30),
+            latencies: false,
+            percentiles: vec![],
+            method: Method::Get,
+            disable_keep_alive: false,
+            headers: vec![],
+            rate: None,
+            cert: None,
+            key: None,
+            insecure: false,
+            text_file: None,
+            text_body: None,
+            json_file: None,
+            json_body: None,
+            json_command: None,
+            form: vec![],
+            mp: vec![],
+            mp_file: vec![],
+            output_format: OutputFormat::Text,
+            completions: None,
+        };
+
+        let dispatcher = create_dispatcher(&arg);
+        // Just test that it creates without panicking
+        let _ = dispatcher;
+    }
+
+    #[test]
+    fn test_create_dispatcher_with_duration() {
+        let arg = Arg {
+            url: Some("http://example.com".to_string()),
+            requests: None,
+            duration: Some(Duration::from_secs(60)),
+            connections: 1,
+            timeout: Duration::from_secs(30),
+            latencies: false,
+            percentiles: vec![],
+            method: Method::Get,
+            disable_keep_alive: false,
+            headers: vec![],
+            rate: None,
+            cert: None,
+            key: None,
+            insecure: false,
+            text_file: None,
+            text_body: None,
+            json_file: None,
+            json_body: None,
+            json_command: None,
+            form: vec![],
+            mp: vec![],
+            mp_file: vec![],
+            output_format: OutputFormat::Text,
+            completions: None,
+        };
+
+        let dispatcher = create_dispatcher(&arg);
+        // Just test that it creates without panicking
+        let _ = dispatcher;
     }
 }

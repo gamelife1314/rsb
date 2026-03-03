@@ -1,9 +1,9 @@
 use std::fs as sfs;
 
 use reqwest::{
+    Client,
     header::{HeaderMap, HeaderName, HeaderValue},
     redirect::Policy,
-    Client,
 };
 
 use crate::Arg;
@@ -36,13 +36,13 @@ pub(crate) fn build_client(arg: &Arg) -> anyhow::Result<Client> {
         .danger_accept_invalid_hostnames(arg.insecure);
 
     // use client certificates
-    if let Some(cert) = &arg.cert {
-        if let Some(key) = &arg.key {
-            let cert = sfs::read(cert)?;
-            let key = sfs::read(key)?;
-            let pkcs8 = reqwest::Identity::from_pkcs8_pem(&cert, &key)?;
-            builder = builder.identity(pkcs8);
-        }
+    if let Some(cert) = &arg.cert
+        && let Some(key) = &arg.key
+    {
+        let cert = sfs::read(cert)?;
+        let key = sfs::read(key)?;
+        let pkcs8 = reqwest::Identity::from_pkcs8_pem(&cert, &key)?;
+        builder = builder.identity(pkcs8);
     }
 
     // forbidden redirect

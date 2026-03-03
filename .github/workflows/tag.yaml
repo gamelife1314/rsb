@@ -30,6 +30,6 @@ jobs:
 
       - name: "Set Tag"
         shell: "bash"
-#        if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
+        if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
         run: |
           git tag v${{ steps.get-tag.outputs.PKG_VERSION }} && git push --tags

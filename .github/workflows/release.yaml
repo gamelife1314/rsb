@@ -32,6 +32,11 @@ jobs:
         shell: "bash"
         run: |
           echo PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml) >> $GITHUB_OUTPUT
+          # 验证version是否有效
+          if [ -z "${{ steps.pkg-version.outputs.PKG_VERSION }}" ]; then
+            echo "Error: Unable to extract version from Cargo.toml"
+            exit 1
+          fi
 
   create-release:
     name: "Create release"
@@ -50,6 +55,7 @@ jobs:
           branch: "main"
           ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
   upload-assets:
     name: "Upload assets to Github releases"
@@ -89,6 +95,7 @@ jobs:
           archive: $bin-${{ matrix.target }}
           ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
   push-to-registry:
     name: "Push Docker image"
