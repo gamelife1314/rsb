@@ -31,12 +31,23 @@ jobs:
         id: "pkg-version"
         shell: "bash"
         run: |
-          echo PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml) >> $GITHUB_OUTPUT
+          # 提取版本号
+          PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml)
+
           # 验证version是否有效
-          if [ -z "${{ steps.pkg-version.outputs.PKG_VERSION }}" ]; then
+          if [ -z "$PKG_VERSION" ]; then
             echo "Error: Unable to extract version from Cargo.toml"
             exit 1
           fi
+
+          # 验证版本号格式 (语义化版本: X.Y.Z)
+          if ! [[ $PKG_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version number '$PKG_VERSION' is not in semantic version format (X.Y.Z)"
+            exit 1
+          fi
+
+          echo "Extracted version: $PKG_VERSION"
+          echo PKG_VERSION=$PKG_VERSION >> $GITHUB_OUTPUT
 
   create-release:
     name: "Create release"
@@ -53,7 +64,7 @@ jobs:
           # (optional) Path to changelog.
           changelog: CHANGELOG.md
           branch: "main"
-          ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
+          ref: refs/tags/v${{ needs.get-tag.outputs.PKG_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
@@ -93,7 +104,7 @@ jobs:
           bin: "rsb"
           target: ${{ matrix.target }}
           archive: $bin-${{ matrix.target }}
-          ref: refs/tags/v${{ needs.get-tag.outputs.pkg-version }}
+          ref: refs/tags/v${{ needs.get-tag.outputs.PKG_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
 
@@ -142,9 +153,9 @@ jobs:
           file: docker/Dockerfile
           tags: |
             gamelife1314/rsb:latest
-            gamelife1314/rsb:v${{ needs.get-tag.outputs.pkg-version }}
+            gamelife1314/rsb:v${{ needs.get-tag.outputs.PKG_VERSION }}
             ghcr.io/gamelife1314/rsb:latest
-            ghcr.io/gamelife1314/rsb:v${{ needs.get-tag.outputs.pkg-version }}
+            ghcr.io/gamelife1314/rsb:v${{ needs.get-tag.outputs.PKG_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64/v8
           build-args: |

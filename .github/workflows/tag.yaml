@@ -26,10 +26,28 @@ jobs:
         shell: "bash"
         if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
         run: |
-          echo PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml) >> $GITHUB_OUTPUT
+          # 提取版本号
+          PKG_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/["]/, "", $2); printf("%s",$2) }' Cargo.toml)
+
+          # 验证version是否有效
+          if [ -z "$PKG_VERSION" ]; then
+            echo "Error: Unable to extract version from Cargo.toml"
+            exit 1
+          fi
+
+          # 验证版本号格式 (语义化版本: X.Y.Z)
+          if ! [[ $PKG_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version number '$PKG_VERSION' is not in semantic version format (X.Y.Z)"
+            exit 1
+          fi
+
+          echo "Extracted version: $PKG_VERSION"
+          echo PKG_VERSION=$PKG_VERSION >> $GITHUB_OUTPUT
 
       - name: "Set Tag"
         shell: "bash"
         if: ${{ !contains(steps.get-latest-commit-msg.outputs.LATEST_COMMIT_MSG, 'no-release') }}
         run: |
+          echo "Creating tag v${{ steps.get-tag.outputs.PKG_VERSION }}"
           git tag v${{ steps.get-tag.outputs.PKG_VERSION }} && git push --tags
+          echo "Tag created and pushed successfully"
