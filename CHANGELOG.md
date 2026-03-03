@@ -1,3 +1,19 @@
+# v0.3.2 - 2026-03-03
+
+## Fixed
+- Fix GitHub Actions Release workflow variable reference issues
+- Add semantic version validation for release tags
+- Improve error handling and logging in CI/CD workflows
+
+## Added
+- Enhance test coverage from 57% to 80%+ with 93 new test cases
+- Add comprehensive tests for arg, output, and statistics modules
+- Add tests for parse_percentiles, parse_filename_and_path functions
+- Add tests for HTTP method conversions and output format handling
+- Add tests for JSON serialization/deserialization
+- Add tests for statistics calculations and message handling
+- Add boundary condition tests for HTTP status codes
+
 # v0.3.1 - 2025-03-03
 
 Upgrade Rust edition to 2024, update dependencies, and fix CI issues.
