@@ -9,3 +9,4 @@
 *.log
 tarpaulin-report.html
 .codemate
+coverage

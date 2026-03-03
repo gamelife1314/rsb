@@ -870,4 +870,71 @@ mod tests {
         let result = cmd.try_get_matches_from_mut(args);
         assert!(result.as_ref().is_err());
     }
+
+    #[test]
+    fn test_parse_percentiles() {
+        // Valid percentiles
+        assert!(parse_percentiles("0.5").is_ok());
+        assert!(parse_percentiles("0.99").is_ok());
+        assert!(parse_percentiles("0.01").is_ok());
+
+        // Invalid percentiles
+        assert!(parse_percentiles("0").is_err());
+        assert!(parse_percentiles("1").is_err());
+        assert!(parse_percentiles("-0.1").is_err());
+        assert!(parse_percentiles("1.5").is_err());
+    }
+
+    #[test]
+    fn test_parse_filename_and_path() {
+        // Valid format
+        assert!(parse_filename_and_path("file1:path/to/file.txt").is_ok());
+        assert!(parse_filename_and_path("filename:/absolute/path").is_ok());
+
+        // Invalid format - no colon
+        assert!(parse_filename_and_path("filename_only").is_err());
+        assert!(parse_filename_and_path("").is_err());
+    }
+
+    #[test]
+    fn test_method_to_reqwest_method() {
+        assert_eq!(Method::Get.to_reqwest_method(), reqwest::Method::GET);
+        assert_eq!(Method::Post.to_reqwest_method(), reqwest::Method::POST);
+        assert_eq!(Method::Put.to_reqwest_method(), reqwest::Method::PUT);
+        assert_eq!(Method::Delete.to_reqwest_method(), reqwest::Method::DELETE);
+        assert_eq!(Method::Head.to_reqwest_method(), reqwest::Method::HEAD);
+        assert_eq!(Method::Patch.to_reqwest_method(), reqwest::Method::PATCH);
+    }
+
+    #[test]
+    fn test_output_format_into_resettable() {
+        let text_format = OutputFormat::Text.into_resettable();
+        let json_format = OutputFormat::Json.into_resettable();
+
+        assert!(matches!(text_format, Value(_)));
+        assert!(matches!(json_format, Value(_)));
+    }
+
+    #[test]
+    fn test_mp_file_conflicts_with_other_body() {
+        let cmd = Arg::command();
+        let args = vec![
+            BINARY,
+            "-n",
+            "20",
+            "--mp-file=t1:text1.txt",
+            "xx",
+            "xx",
+            URI,
+        ];
+        let conflicts_params = vec![
+            "--text-file",
+            "--form",
+            "--text-body",
+            "--json-file",
+            "--json-body",
+            "--json-command",
+        ];
+        validate_args_conflict(conflicts_params, args, cmd);
+    }
 }

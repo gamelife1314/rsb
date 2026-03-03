@@ -534,4 +534,202 @@ mod tests {
         let message = Message::new(response, req_at, rsp_at);
         assert!(message.response.is_err());
     }
+
+    #[tokio::test]
+    async fn test_statistics_handle_message_success() {
+        let stats = Statistics::new();
+
+        // Create a mock success response
+        let client = reqwest::Client::new();
+        let response = client
+            .get("http://httpbin.org/status/200")
+            .send()
+            .await;
+
+        let message = Message::new(response, Instant::now(), Instant::now());
+        stats.handle_message(message).await;
+
+        assert_eq!(stats.total.load(Acquire), 1);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_handle_message_error() {
+        let stats = Statistics::new();
+
+        // Create a mock error response
+        let client = reqwest::Client::new();
+        let response = client
+            .get("http://invalid-url-that-does-not-exist-12345.com")
+            .send()
+            .await;
+
+        let message = Message::new(response, Instant::now(), Instant::now());
+        stats.handle_message(message).await;
+
+        assert_eq!(stats.total.load(Acquire), 1);
+        assert_eq!(stats.total_success.load(Acquire), 0);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_elapsed_time() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        let mut used_time = stats.used_time.lock().await;
+        for i in 0..10 {
+            used_time.push(Duration::from_millis(i as u64 * 10));
+        }
+        drop(used_time);
+
+        stats.calculate_elapsed_time().await;
+
+        let avg = *stats.avg_req_used_time.lock().await;
+        let max = *stats.max_req_used_time.lock().await;
+        let stdev = *stats.stdev_req_used_time.lock().await;
+
+        assert!(avg > Duration::ZERO);
+        assert!(max > Duration::ZERO);
+        assert!(stdev >= Duration::ZERO);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_throughput() {
+        let stats = Statistics::new();
+
+        // Set avg_req_used_time
+        let mut avg_time = stats.avg_req_used_time.lock().await;
+        *avg_time = Duration::from_millis(100);
+        drop(avg_time);
+
+        stats.calculate_throughput(10).await;
+
+        let throughput = *stats.throughput.lock().await;
+        assert!(throughput > 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_latencies() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        let mut used_time = stats.used_time.lock().await;
+        for i in 0..100 {
+            used_time.push(Duration::from_millis(i as u64));
+        }
+        drop(used_time);
+
+        stats.calculate_latencies(vec![0.5, 0.9]).await;
+
+        let latencies = stats.latencies.lock().await;
+        assert!(!latencies.is_empty());
+        assert_eq!(latencies.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_timer_per_second() {
+        use std::sync::Arc;
+
+        let stats = Arc::new(Statistics::new());
+
+        // Add some cumulative data
+        stats.current_cumulative.fetch_add(10, SeqCst);
+
+        // Start timer in background
+        let stats_clone = Arc::clone(&stats);
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(1500)).await;
+            stats_clone.stop_timer().await;
+        });
+
+        stats.timer_per_second().await;
+
+        let req_per_second = stats.req_per_second.lock().await;
+        assert!(!req_per_second.is_empty());
+    }
+
+    #[test]
+    fn test_statistics_rsp_code_boundary_cases() {
+        let stats = Statistics::new();
+
+        // Test boundary values
+        stats.statistics_rsp_code(StatusCode::CONTINUE); // 100
+        stats.statistics_rsp_code(StatusCode::OK); // 200
+        stats.statistics_rsp_code(StatusCode::MULTIPLE_CHOICES); // 300
+        stats.statistics_rsp_code(StatusCode::BAD_REQUEST); // 400
+        stats.statistics_rsp_code(StatusCode::NETWORK_AUTHENTICATION_REQUIRED); // 511
+
+        assert_eq!(stats.rsp1xx.load(Acquire), 1);
+        assert_eq!(stats.rsp2xx.load(Acquire), 1);
+        assert_eq!(stats.rsp3xx.load(Acquire), 1);
+        assert_eq!(stats.rsp4xx.load(Acquire), 1);
+        assert_eq!(stats.rsp5xx.load(Acquire), 1);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_clear_temporary_data() {
+        let stats = Statistics::new();
+
+        // Add some data
+        let mut used_time = stats.used_time.lock().await;
+        for i in 0..10 {
+            used_time.push(Duration::from_millis(i as u64));
+        }
+        drop(used_time);
+
+        stats.clear_temporary_data().await;
+
+        let used_time = stats.used_time.lock().await;
+        assert!(used_time.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_avg_per_second() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        let mut req_per_second = stats.req_per_second.lock().await;
+        for i in 0..10 {
+            req_per_second.push(i * 10);
+        }
+        drop(req_per_second);
+
+        stats.calculate_avg_per_second().await;
+
+        let avg = *stats.avg_req_per_second.lock().await;
+        assert!(avg > 0.0);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_max_per_second() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        let mut req_per_second = stats.req_per_second.lock().await;
+        for i in 0..10 {
+            req_per_second.push(i * 10);
+        }
+        drop(req_per_second);
+
+        stats.calculate_max_per_second().await;
+
+        let max = *stats.max_req_per_second.lock().await;
+        assert_eq!(max, 90.0);
+    }
+
+    #[tokio::test]
+    async fn test_statistics_calculate_stdev_per_second() {
+        let stats = Statistics::new();
+
+        // Add some test data
+        let mut req_per_second = stats.req_per_second.lock().await;
+        for i in 0..10 {
+            req_per_second.push(i * 10);
+        }
+        drop(req_per_second);
+
+        stats.calculate_stdev_per_second().await;
+
+        let stdev = *stats.stdev_per_second.lock().await;
+        assert!(stdev > 0.0);
+    }
 }

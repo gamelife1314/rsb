@@ -325,4 +325,120 @@ mod tests {
         let output = result.unwrap();
         assert!(output.contains("Statistics"));
     }
+
+    #[test]
+    fn test_sync_text_output_with_latencies() {
+        let stats = Statistics::new();
+        let arg = Arg {
+            url: Some("http://example.com".to_string()),
+            requests: Some(10),
+            connections: 1,
+            timeout: Duration::from_secs(30),
+            latencies: true,
+            percentiles: vec![0.5, 0.9],
+            method: Method::Get,
+            disable_keep_alive: false,
+            headers: vec![],
+            duration: None,
+            rate: None,
+            cert: None,
+            key: None,
+            insecure: false,
+            text_file: None,
+            text_body: None,
+            json_file: None,
+            json_body: None,
+            json_command: None,
+            form: vec![],
+            mp: vec![],
+            mp_file: vec![],
+            output_format: OutputFormat::Text,
+            completions: None,
+        };
+
+        let result = sync_text_output(&stats, &arg);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        assert!(output.contains("Statistics"));
+    }
+
+    #[test]
+    fn test_sync_from_statistics() {
+        let stats = Statistics::new();
+        let result = Output::sync_from_statistics(&stats);
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        assert_eq!(output.rsp1xx, 0);
+        assert_eq!(output.rsp2xx, 0);
+    }
+
+    #[test]
+    fn test_output_serialization() {
+        let output = Output {
+            avg_req_per_second: 100.0,
+            stdev_per_second: 10.0,
+            max_req_per_second: 150.0,
+            avg_req_used_time: Micros(1000),
+            stdev_req_used_time: Micros(200),
+            max_req_used_time: Micros(5000),
+            latencies: vec![Latency::new(0.5, Micros(1500))],
+            rsp1xx: 0,
+            rsp2xx: 100,
+            rsp3xx: 0,
+            rsp4xx: 0,
+            rsp5xx: 0,
+            rsp_others: 0,
+            errors: std::collections::HashMap::new(),
+            throughput: 50.0,
+        };
+
+        // Test JSON serialization
+        let json = serde_json::to_string(&output);
+        assert!(json.is_ok());
+        let json_str = json.unwrap();
+        assert!(json_str.contains("avg_req_per_second"));
+
+        // Test JSON deserialization
+        let deserialized: Result<Output, _> = serde_json::from_str(&json_str);
+        assert!(deserialized.is_ok());
+        let output_back = deserialized.unwrap();
+        assert_eq!(output.avg_req_per_second, output_back.avg_req_per_second);
+    }
+
+    #[test]
+    fn test_latency_display() {
+        let latency = Latency::new(0.5, Micros(1000));
+        assert_eq!(latency.percent, 0.5);
+        assert_eq!(latency.micros.0, 1000);
+    }
+
+    #[test]
+    fn test_micros_from_duration() {
+        let duration = Duration::from_secs(1);
+        let micros: Micros = duration.into();
+        assert_eq!(micros.0, 1_000_000);
+
+        let duration = Duration::from_millis(1);
+        let micros: Micros = duration.into();
+        assert_eq!(micros.0, 1_000);
+
+        let duration = Duration::from_micros(1);
+        let micros: Micros = duration.into();
+        assert_eq!(micros.0, 1);
+    }
+
+    #[test]
+    fn test_micros_display_various_formats() {
+        let micros = Micros(1);
+        assert_eq!("1.00µs", format!("{micros}"));
+
+        let micros = Micros(1_000);
+        assert_eq!("1.00ms", format!("{micros}"));
+
+        let micros = Micros(1_000_000);
+        assert_eq!("1.00s", format!("{micros}"));
+
+        let micros = Micros(1_500_000);
+        assert_eq!("1.50s", format!("{micros}"));
+    }
 }
