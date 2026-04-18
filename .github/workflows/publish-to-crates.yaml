@@ -1,18 +1,16 @@
 name: "Crates.io"
 
 on:
-  workflow_run:
-    workflows: [ "Tag" ]
-    types: [ completed ]
-    branches:
-      - 'main'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish-to-crates-io:
     name: "Publish to crates.io"
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
