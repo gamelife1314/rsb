@@ -15,8 +15,10 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: "Update Cargo.lock"
+        run: cargo update
       - uses: katyo/publish-crates@v2
         with:
           registry-token: ${{ secrets.CRATESIO_TOKEN }}
           ignore-unpublished-changes: true
-          args: --allow-dirty
+          args: '--allow-dirty'
