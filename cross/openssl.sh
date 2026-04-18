@@ -1,7 +1,7 @@
 set -ex
 
 main() {
-    local version=1.1.1t
+    local version=1.1.1w
     local os=$1 \
           triple=$2
 
@@ -28,8 +28,18 @@ main() {
     td=$(mktemp -d)
 
     pushd "$td"
-    curl https://www.openssl.org/source/openssl-$version.tar.gz | \
-        tar --strip-components=1 -xz
+    
+    # Download with error checking
+    curl -fSL "https://www.openssl.org/source/openssl-$version.tar.gz" -o openssl.tar.gz
+    
+    # Verify it's a valid gzip file before extracting
+    if ! gzip -t openssl.tar.gz; then
+        echo "Error: Downloaded file is not in gzip format"
+        exit 1
+    fi
+    
+    tar --strip-components=1 -xzf openssl.tar.gz
+    
     # shellcheck disable=SC2068
     AR=${triple}ar CC=${triple}gcc ./Configure \
       --prefix=/openssl \
