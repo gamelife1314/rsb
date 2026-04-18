@@ -1,6 +1,7 @@
-# v0.3.3 - 2026-04-18
+# v0.3.4 - 2026-04-18
 
 ## Fixed
+- Fix cargo fmt formatting issues in statistics.rs
 - Fix syntax error in statistics.rs (invalid comparison operator)
 - Fix duplicate `json_file` in arg.rs conflicts_with_all
 - Move test module in dispatcher.rs to end of file (clippy::items_after_test_module)
@@ -10,7 +11,7 @@
 - Update dependencies to latest versions (tokio, zerocopy, wasm-bindgen, etc.)
 - Improve code style and consistency
 
-# v0.3.2 - 2026-03-03
+# v0.3.3 - 2026-04-18
 
 ## Fixed
 - Fix GitHub Actions Release workflow variable reference issues
