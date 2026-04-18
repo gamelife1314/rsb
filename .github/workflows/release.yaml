@@ -45,7 +45,9 @@ jobs:
           fi
 
           echo "Extracted version: $PKG_VERSION"
-          echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo "PKG_VERSION=$PKG_VERSION"
+          } >> "$GITHUB_OUTPUT"
 
   create-release:
     name: "Create release"
