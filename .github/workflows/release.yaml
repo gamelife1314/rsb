@@ -72,7 +72,7 @@ jobs:
       - name: Install cross
         uses: taiki-e/install-action@v2
         with:
-          tool: cross@git
+          tool: cross
       
       - name: Build
         run: cross build --release --target aarch64-unknown-linux-gnu
