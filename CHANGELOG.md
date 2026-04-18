@@ -1,3 +1,15 @@
+# v0.3.3 - 2026-04-18
+
+## Fixed
+- Fix syntax error in statistics.rs (invalid comparison operator)
+- Fix duplicate `json_file` in arg.rs conflicts_with_all
+- Move test module in dispatcher.rs to end of file (clippy::items_after_test_module)
+- Replace `assert_eq!(.., true/false)` with `assert!(..)` for boolean assertions (clippy::bool_assert_comparison)
+
+## Updated
+- Update dependencies to latest versions (tokio, zerocopy, wasm-bindgen, etc.)
+- Improve code style and consistency
+
 # v0.3.2 - 2026-03-03
 
 ## Fixed

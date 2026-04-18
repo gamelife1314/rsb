@@ -8,132 +8,6 @@ use tokio::time;
 
 use crate::limiter::Limiter;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_new_limiter_with_rate() {
-        let rate = Some(10);
-        let limiter = new_limiter(&rate);
-        assert!(limiter.is_some());
-    }
-
-    #[test]
-    fn test_new_limiter_without_rate() {
-        let rate: Option<u16> = None;
-        let limiter = new_limiter(&rate);
-        assert!(limiter.is_none());
-    }
-
-    #[test]
-    fn test_count_dispatcher_new() {
-        let dispatcher = CountDispatcher::new(100, &Some(10));
-        assert_eq!(dispatcher.applied.load(Acquire), 0);
-        assert_eq!(dispatcher.completed.load(Acquire), 0);
-        assert_eq!(dispatcher.is_canceled.load(Acquire), false);
-        assert_eq!(dispatcher.is_done.load(Acquire), false);
-    }
-
-    #[test]
-    fn test_count_dispatcher_is_canceled_or_done() {
-        let dispatcher = CountDispatcher::new(100, &None);
-        assert_eq!(dispatcher.is_canceled_or_done(), false);
-
-        dispatcher.is_done.store(true, SeqCst);
-        assert_eq!(dispatcher.is_canceled_or_done(), true);
-    }
-
-    #[tokio::test]
-    async fn test_count_dispatcher_try_apply_job() {
-        let dispatcher = CountDispatcher::new(5, &None);
-
-        // Apply 5 jobs
-        for i in 0..5 {
-            let result = dispatcher.try_apply_job().await;
-            assert_eq!(result, true, "Job {} should succeed", i);
-        }
-
-        // 6th job should fail
-        let result = dispatcher.try_apply_job().await;
-        assert_eq!(result, false);
-    }
-
-    #[test]
-    fn test_count_dispatcher_complete_job() {
-        let dispatcher = CountDispatcher::new(5, &None);
-
-        // Complete 5 jobs
-        for _ in 0..5 {
-            dispatcher.complete_job();
-        }
-
-        assert_eq!(dispatcher.completed.load(Acquire), 5);
-        assert_eq!(dispatcher.is_done.load(Acquire), true);
-    }
-
-    #[test]
-    fn test_count_dispatcher_cancel() {
-        let mut dispatcher = CountDispatcher::new(100, &None);
-        assert_eq!(dispatcher.is_canceled.load(Acquire), false);
-
-        dispatcher.cancel();
-        assert_eq!(dispatcher.is_canceled.load(Acquire), true);
-    }
-
-    #[test]
-    fn test_duration_dispatcher_new() {
-        let duration = Duration::from_secs(60);
-        let dispatcher = DurationDispatcher::new(duration, &Some(10));
-        assert_eq!(dispatcher.total.load(Acquire), 0);
-        assert_eq!(dispatcher.is_canceled.load(Acquire), false);
-        assert_eq!(dispatcher.is_done.load(Acquire), false);
-    }
-
-    #[test]
-    fn test_duration_dispatcher_is_canceled_or_done() {
-        let duration = Duration::from_secs(60);
-        let dispatcher = DurationDispatcher::new(duration, &None);
-        assert_eq!(dispatcher.is_canceled_or_done(), false);
-
-        dispatcher.is_done.store(true, SeqCst);
-        assert_eq!(dispatcher.is_canceled_or_done(), true);
-    }
-
-    #[tokio::test]
-    async fn test_duration_dispatcher_try_apply_job() {
-        let duration = Duration::from_secs(1);
-        let dispatcher = DurationDispatcher::new(duration, &None);
-
-        // Should be able to apply jobs within duration
-        let result = dispatcher.try_apply_job().await;
-        assert_eq!(result, true);
-        assert_eq!(dispatcher.total.load(Acquire), 1);
-    }
-
-    #[test]
-    fn test_duration_dispatcher_complete_job() {
-        let duration = Duration::from_secs(60);
-        let dispatcher = DurationDispatcher::new(duration, &None);
-
-        dispatcher.complete_job();
-        // Should not be done since duration hasn't elapsed
-        assert_eq!(dispatcher.is_done.load(Acquire), false);
-    }
-
-    #[test]
-    fn test_duration_dispatcher_cancel() {
-        let duration = Duration::from_secs(60);
-        let mut dispatcher = DurationDispatcher::new(duration, &None);
-        assert_eq!(dispatcher.is_canceled.load(Acquire), false);
-        assert!(dispatcher.canceled_at.is_none());
-
-        dispatcher.cancel();
-        assert_eq!(dispatcher.is_canceled.load(Acquire), true);
-        assert!(dispatcher.canceled_at.is_some());
-    }
-}
-
 #[async_trait]
 pub(crate) trait Dispatcher: Send + Sync {
     type Limiter = Limiter;
@@ -348,5 +222,131 @@ impl Dispatcher for DurationDispatcher {
             self.is_canceled.store(true, SeqCst);
             self.canceled_at = Some(Instant::now());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_limiter_with_rate() {
+        let rate = Some(10);
+        let limiter = new_limiter(&rate);
+        assert!(limiter.is_some());
+    }
+
+    #[test]
+    fn test_new_limiter_without_rate() {
+        let rate: Option<u16> = None;
+        let limiter = new_limiter(&rate);
+        assert!(limiter.is_none());
+    }
+
+    #[test]
+    fn test_count_dispatcher_new() {
+        let dispatcher = CountDispatcher::new(100, &Some(10));
+        assert_eq!(dispatcher.applied.load(Acquire), 0);
+        assert_eq!(dispatcher.completed.load(Acquire), 0);
+        assert!(!dispatcher.is_canceled.load(Acquire));
+        assert!(!dispatcher.is_done.load(Acquire));
+    }
+
+    #[test]
+    fn test_count_dispatcher_is_canceled_or_done() {
+        let dispatcher = CountDispatcher::new(100, &None);
+        assert!(!dispatcher.is_canceled_or_done());
+
+        dispatcher.is_done.store(true, SeqCst);
+        assert!(dispatcher.is_canceled_or_done());
+    }
+
+    #[tokio::test]
+    async fn test_count_dispatcher_try_apply_job() {
+        let dispatcher = CountDispatcher::new(5, &None);
+
+        // Apply 5 jobs
+        for i in 0..5 {
+            let result = dispatcher.try_apply_job().await;
+            assert!(result, "Job {} should succeed", i);
+        }
+
+        // 6th job should fail
+        let result = dispatcher.try_apply_job().await;
+        assert!(!result);
+    }
+
+    #[test]
+    fn test_count_dispatcher_complete_job() {
+        let dispatcher = CountDispatcher::new(5, &None);
+
+        // Complete 5 jobs
+        for _ in 0..5 {
+            dispatcher.complete_job();
+        }
+
+        assert_eq!(dispatcher.completed.load(Acquire), 5);
+        assert!(dispatcher.is_done.load(Acquire));
+    }
+
+    #[test]
+    fn test_count_dispatcher_cancel() {
+        let mut dispatcher = CountDispatcher::new(100, &None);
+        assert!(!dispatcher.is_canceled.load(Acquire));
+
+        dispatcher.cancel();
+        assert!(dispatcher.is_canceled.load(Acquire));
+    }
+
+    #[test]
+    fn test_duration_dispatcher_new() {
+        let duration = Duration::from_secs(60);
+        let dispatcher = DurationDispatcher::new(duration, &Some(10));
+        assert_eq!(dispatcher.total.load(Acquire), 0);
+        assert!(!dispatcher.is_canceled.load(Acquire));
+        assert!(!dispatcher.is_done.load(Acquire));
+    }
+
+    #[test]
+    fn test_duration_dispatcher_is_canceled_or_done() {
+        let duration = Duration::from_secs(60);
+        let dispatcher = DurationDispatcher::new(duration, &None);
+        assert!(!dispatcher.is_canceled_or_done());
+
+        dispatcher.is_done.store(true, SeqCst);
+        assert!(dispatcher.is_canceled_or_done());
+    }
+
+    #[tokio::test]
+    async fn test_duration_dispatcher_try_apply_job() {
+        let duration = Duration::from_secs(1);
+        let dispatcher = DurationDispatcher::new(duration, &None);
+
+        // Should be able to apply jobs within duration
+        let result = dispatcher.try_apply_job().await;
+        assert!(result);
+        assert_eq!(dispatcher.total.load(Acquire), 1);
+    }
+
+    #[test]
+    fn test_duration_dispatcher_complete_job() {
+        let duration = Duration::from_secs(60);
+        let dispatcher = DurationDispatcher::new(duration, &None);
+
+        dispatcher.complete_job();
+        // Should not be done since duration hasn't elapsed
+        assert!(!dispatcher.is_done.load(Acquire));
+    }
+
+    #[test]
+    fn test_duration_dispatcher_cancel() {
+        let duration = Duration::from_secs(60);
+        let mut dispatcher = DurationDispatcher::new(duration, &None);
+        assert!(!dispatcher.is_canceled.load(Acquire));
+        assert!(dispatcher.canceled_at.is_none());
+
+        dispatcher.cancel();
+        assert!(dispatcher.is_canceled.load(Acquire));
+        assert!(dispatcher.canceled_at.is_some());
     }
 }

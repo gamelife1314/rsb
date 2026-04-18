@@ -170,8 +170,7 @@ impl Statistics {
             },
             status
                 if status >= StatusCode::INTERNAL_SERVER_ERROR
-                    && status
-                        <= StatusCode::NETWORK_AUTHENTICATION_REQUIRED =>
+                    && status <= StatusCode::NETWORK_AUTHENTICATION_REQUIRED =>
             {
                 self.rsp5xx.fetch_add(1, SeqCst);
             },
@@ -448,10 +447,10 @@ mod tests {
     #[tokio::test]
     async fn test_statistics_stop_timer() {
         let stats = Statistics::new();
-        assert_eq!(stats.is_stopped.load(Acquire), false);
+        assert!(!stats.is_stopped.load(Acquire));
 
         stats.stop_timer().await;
-        assert_eq!(stats.is_stopped.load(Acquire), true);
+        assert!(stats.is_stopped.load(Acquire));
         assert!(stats.stopped_at.lock().await.is_some());
     }
 

@@ -334,7 +334,7 @@ pub struct Arg {
         long,
         num_args = 0..,
         value_delimiter = ',',
-        conflicts_with_all(["mp_file", "mp", "text_body", "text_file", "json_file", "json_file"]),
+        conflicts_with_all(["mp_file", "mp", "text_body", "text_file", "json_file"]),
         help = "Form request parameters, Content-Type: application/x-www-form-urlencoded, example: --form=k:v,k1:v1"
     )]
     pub(crate) form: Vec<String>,
