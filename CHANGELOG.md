@@ -1,3 +1,26 @@
+# v0.3.5 - 2026-04-18
+
+## Fixed
+- Fix cargo fmt formatting issues in statistics.rs
+- Fix syntax error in statistics.rs (invalid comparison operator)
+- Fix duplicate `json_file` in arg.rs conflicts_with_all
+- Move test module in dispatcher.rs to end of file (clippy::items_after_test_module)
+- Replace `assert_eq!(.., true/false)` with `assert!(..)` for boolean assertions (clippy::bool_assert_comparison)
+- Fix cross-compilation for Linux ARM64 using cross
+
+## Added
+- Full cross-platform support with static linking:
+  - Linux x86_64 (musl - fully static)
+  - Linux ARM64 (cross-compiled)
+  - macOS x86_64 (native)
+  - macOS ARM64 (native)
+  - Windows x86_64 (native)
+
+## Updated
+- Update dependencies to latest versions (tokio, zerocopy, wasm-bindgen, etc.)
+- Improve code style and consistency
+- Simplified release workflow - crates.io publish independent from GitHub Release
+
 # v0.3.4 - 2026-04-18
 
 ## Fixed
