@@ -30,8 +30,8 @@ jobs:
         shell: "bash"
         run: |
           # Extract version from tag name (remove 'v' prefix)
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          PKG_VERSION=${TAG_NAME#v}
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          PKG_VERSION="${TAG_NAME#v}"
 
           # Validate version format (semantic version: X.Y.Z)
           if [ -z "$PKG_VERSION" ]; then
@@ -45,7 +45,7 @@ jobs:
           fi
 
           echo "Extracted version: $PKG_VERSION"
-          echo PKG_VERSION=$PKG_VERSION >> $GITHUB_OUTPUT
+          echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_OUTPUT"
 
   create-release:
     name: "Create release"
