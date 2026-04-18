@@ -170,7 +170,8 @@ impl Statistics {
             },
             status
                 if status >= StatusCode::INTERNAL_SERVER_ERROR
-                    && status <= StatusCode::NETWORK_AUTHENTICATION_REQUIRED =>
+                    && status
+                        <= StatusCode::NETWORK_AUTHENTICATION_REQUIRED =>
             {
                 self.rsp5xx.fetch_add(1, SeqCst);
             },
@@ -540,10 +541,7 @@ mod tests {
 
         // Create a mock success response
         let client = reqwest::Client::new();
-        let response = client
-            .get("http://httpbin.org/status/200")
-            .send()
-            .await;
+        let response = client.get("http://httpbin.org/status/200").send().await;
 
         let message = Message::new(response, Instant::now(), Instant::now());
         stats.handle_message(message).await;
