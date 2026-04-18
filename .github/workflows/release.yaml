@@ -12,7 +12,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # Extract version from tag name (e.g., v0.3.4 -> 0.3.4)
   PKG_VERSION: ${{ github.ref_name }}
 
 jobs:
@@ -57,6 +56,14 @@ jobs:
     steps:
       - name: "Check out the repo"
         uses: actions/checkout@v4
+
+      - name: "Install Rust toolchain"
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+          profile: minimal
 
       - name: "Upload Binaries"
         uses: "taiki-e/upload-rust-binary-action@v1"
