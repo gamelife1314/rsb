@@ -11,6 +11,7 @@ main() {
         m4
         make
         perl
+        wget
     )
 
     # NOTE cross toolchain must be already installed
@@ -29,12 +30,33 @@ main() {
 
     pushd "$td"
     
-    # Download with error checking
-    curl -fSL "https://www.openssl.org/source/openssl-$version.tar.gz" -o openssl.tar.gz
+    # Try multiple mirrors for downloading openssl
+    local urls=(
+        "https://www.openssl.org/source/openssl-$version.tar.gz"
+        "https://github.com/openssl/openssl/releases/download/openssl-$version/openssl-$version.tar.gz"
+        "https://mirrors.dotsrc.org/openssl/source/openssl-$version.tar.gz"
+    )
+    
+    local downloaded=false
+    for url in "${urls[@]}"; do
+        echo "Trying to download from: $url"
+        if curl -fSL "$url" -o openssl.tar.gz 2>/dev/null; then
+            echo "Download successful from: $url"
+            downloaded=true
+            break
+        fi
+    done
+    
+    if [ "$downloaded" = false ]; then
+        echo "Error: Failed to download openssl from all mirrors"
+        exit 1
+    fi
     
     # Verify it's a valid gzip file before extracting
     if ! gzip -t openssl.tar.gz; then
         echo "Error: Downloaded file is not in gzip format"
+        echo "File content preview:"
+        head -c 500 openssl.tar.gz || true
         exit 1
     fi
     

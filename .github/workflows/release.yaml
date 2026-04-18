@@ -40,8 +40,8 @@ jobs:
           ref: ${{ github.ref }}
           token: ${{ env.GITHUB_TOKEN }}
 
-  # Build and upload binaries - depends on release creation
-  upload-binaries-linux:
+  # Linux x86_64 - static linking with musl
+  upload-linux-x86_64:
     name: Upload Binaries (Linux x86_64)
     runs-on: ubuntu-latest
     needs: create-release
@@ -52,12 +52,43 @@ jobs:
         uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: rsb
-          target: x86_64-unknown-linux-gnu
-          archive: rsb-x86_64-unknown-linux-gnu
+          target: x86_64-unknown-linux-musl
+          archive: rsb-x86_64-unknown-linux-musl
           token: ${{ env.GITHUB_TOKEN }}
 
-  upload-binaries-macos:
-    name: Upload Binaries (macOS)
+  # Linux ARM64 - using cross
+  upload-linux-arm64:
+    name: Upload Binaries (Linux ARM64)
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+      
+      - name: Install cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross@git
+      
+      - name: Build
+        run: cross build --release --target aarch64-unknown-linux-gnu
+      
+      - name: Upload
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ env.GITHUB_TOKEN }}
+          file: target/aarch64-unknown-linux-gnu/release/rsb
+          asset_name: rsb-aarch64-unknown-linux-gnu.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  # macOS x86_64 - native
+  upload-macos-x86_64:
+    name: Upload Binaries (macOS x86_64)
     runs-on: macos-latest
     needs: create-release
     steps:
@@ -71,8 +102,25 @@ jobs:
           archive: rsb-x86_64-apple-darwin
           token: ${{ env.GITHUB_TOKEN }}
 
-  upload-binaries-windows:
-    name: Upload Binaries (Windows)
+  # macOS ARM64 - native
+  upload-macos-arm64:
+    name: Upload Binaries (macOS ARM64)
+    runs-on: macos-latest
+    needs: create-release
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build and upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: rsb
+          target: aarch64-apple-darwin
+          archive: rsb-aarch64-apple-darwin
+          token: ${{ env.GITHUB_TOKEN }}
+
+  # Windows x86_64 - native
+  upload-windows-x86_64:
+    name: Upload Binaries (Windows x86_64)
     runs-on: windows-latest
     needs: create-release
     steps:
@@ -86,7 +134,7 @@ jobs:
           archive: rsb-x86_64-pc-windows-msvc
           token: ${{ env.GITHUB_TOKEN }}
 
-  # Build and push Docker images - independent
+  # Build and push Docker images
   push-docker:
     name: Push Docker Images
     runs-on: ubuntu-latest
