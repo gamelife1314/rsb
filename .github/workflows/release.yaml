@@ -12,66 +12,28 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # Extract version from tag name (e.g., v0.3.4 -> 0.3.4)
+  PKG_VERSION: ${{ github.ref_name }}
 
 jobs:
-  get-tag:
-    name: "Get Tag From Package Version"
-    runs-on: "ubuntu-latest"
-    outputs:
-      pkg-version: ${{ steps.pkg-version.outputs.PKG_VERSION }}
-    steps:
-      - name: "Check out the repo"
-        uses: "actions/checkout@v3"
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Get tag"
-        id: "pkg-version"
-        shell: "bash"
-        run: |
-          # Extract version from tag name (remove 'v' prefix)
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          PKG_VERSION="${TAG_NAME#v}"
-
-          # Validate version format (semantic version: X.Y.Z)
-          if [ -z "$PKG_VERSION" ]; then
-            echo "Error: Unable to extract version from tag name"
-            exit 1
-          fi
-
-          if ! [[ $PKG_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Version number '$PKG_VERSION' is not in semantic version format (X.Y.Z)"
-            exit 1
-          fi
-
-          echo "Extracted version: $PKG_VERSION"
-          {
-            echo "PKG_VERSION=$PKG_VERSION"
-          } >> "$GITHUB_OUTPUT"
-
   create-release:
     name: "Create release"
-    needs: "get-tag"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Create release"
         uses: "taiki-e/create-gh-release-action@v1"
         with:
-          # (optional) Path to changelog.
           changelog: CHANGELOG.md
           branch: "main"
-          ref: refs/tags/v${{ needs.get-tag.outputs.PKG_VERSION }}
+          ref: refs/tags/${{ env.PKG_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
   upload-assets:
     name: "Upload assets to Github releases"
-    needs:
-      - "get-tag"
-      - "create-release"
+    needs: "create-release"
     strategy:
       matrix:
         include:
@@ -94,7 +56,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: "Check out the repo"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Upload Binaries"
         uses: "taiki-e/upload-rust-binary-action@v1"
@@ -102,18 +64,15 @@ jobs:
           bin: "rsb"
           target: ${{ matrix.target }}
           archive: $bin-${{ matrix.target }}
-          ref: refs/tags/v${{ needs.get-tag.outputs.PKG_VERSION }}
+          ref: refs/tags/${{ env.PKG_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
   push-to-registry:
     name: "Push Docker image"
-    needs:
-      - "get-tag"
     runs-on: "ubuntu-latest"
     steps:
       - name: "Check out the repo"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Set up QEMU"
         uses: docker/setup-qemu-action@v2
@@ -150,9 +109,9 @@ jobs:
           file: docker/Dockerfile
           tags: |
             gamelife1314/rsb:latest
-            gamelife1314/rsb:v${{ needs.get-tag.outputs.PKG_VERSION }}
+            gamelife1314/rsb:${{ env.PKG_VERSION }}
             ghcr.io/gamelife1314/rsb:latest
-            ghcr.io/gamelife1314/rsb:v${{ needs.get-tag.outputs.PKG_VERSION }}
+            ghcr.io/gamelife1314/rsb:${{ env.PKG_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64/v8
           build-args: |
