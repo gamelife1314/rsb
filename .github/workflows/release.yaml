@@ -1,8 +1,8 @@
-name: "Release"
+name: Release
 
 permissions:
-  contents: "write"
-  packages: "write"
+  contents: write
+  packages: write
 
 on:
   push:
@@ -10,115 +10,103 @@ on:
       - 'v*'
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  PKG_VERSION: ${{ github.ref_name }}
+  CARGO_REGISTRY_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  create-release:
-    name: "Create release"
-    runs-on: "ubuntu-latest"
+  # Publish to crates.io
+  publish-crates:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
     steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      
+      - name: Publish to crates.io
+        run: cargo publish
 
-      - name: "Create release"
-        uses: "taiki-e/create-gh-release-action@v1"
+  # Create GitHub Release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: publish-crates
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Release
+        uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: CHANGELOG.md
-          branch: "main"
-          ref: refs/tags/${{ env.PKG_VERSION }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
+          token: ${{ env.GITHUB_TOKEN }}
 
-  upload-assets:
-    name: "Upload assets to Github releases"
-    needs: "create-release"
+  # Build and upload binaries
+  upload-binaries:
+    name: Upload Binaries
+    runs-on: ubuntu-latest
+    needs: create-release
     strategy:
       matrix:
-        include:
-          - target: "x86_64-unknown-linux-gnu"
-            os: "ubuntu-latest"
-          - target: "x86_64-unknown-linux-musl"
-            os: "ubuntu-latest"
-          - target: "aarch64-unknown-linux-gnu"
-            os: "ubuntu-latest"
-          - target: "aarch64-apple-darwin"
-            os: "macos-latest"
-          - target: "x86_64-apple-darwin"
-            os: "macos-latest"
-          - target: "universal-apple-darwin"
-            os: "macos-latest"
-          - target: "x86_64-pc-windows-gnu"
-            os: "windows-latest"
-          - target: "x86_64-pc-windows-msvc"
-            os: "windows-latest"
-    runs-on: ${{ matrix.os }}
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-gnu
+          - x86_64-pc-windows-msvc
     steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v4
-
-      - name: "Install Rust toolchain"
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      
+      - name: Build and upload
+        uses: taiki-e/upload-rust-binary-action@v1
         with:
-          toolchain: nightly
-          override: true
-          profile: minimal
-
-      - name: "Upload Binaries"
-        uses: "taiki-e/upload-rust-binary-action@v1"
-        with:
-          bin: "rsb"
+          bin: rsb
           target: ${{ matrix.target }}
-          archive: $bin-${{ matrix.target }}
-          ref: refs/tags/${{ env.PKG_VERSION }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          archive: rsb-${{ matrix.target }}
+          token: ${{ env.GITHUB_TOKEN }}
 
-  push-to-registry:
-    name: "Push Docker image"
-    runs-on: "ubuntu-latest"
+  # Build and push Docker images
+  push-docker:
+    name: Push Docker Images
+    runs-on: ubuntu-latest
+    needs: publish-crates
     steps:
-      - name: "Check out the repo"
-        uses: actions/checkout@v4
-
-      - name: "Set up QEMU"
-        uses: docker/setup-qemu-action@v2
-
-      - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          driver: docker-container
-
-      - name: "Login to Docker Hub"
-        uses: docker/login-action@v2
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
+      
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: "Log in to the github container registry"
-        uses: "docker/login-action@v2"
-        with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: "Extract metadata (tags, labels) for Docker"
-        id: "meta"
-        uses: "docker/metadata-action@v4"
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: "Build and push Docker image"
-        uses: "docker/build-push-action@v4"
+          password: ${{ env.GITHUB_TOKEN }}
+      
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
           file: docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
           tags: |
             gamelife1314/rsb:latest
-            gamelife1314/rsb:${{ env.PKG_VERSION }}
+            gamelife1314/rsb:${{ steps.version.outputs.VERSION }}
             ghcr.io/gamelife1314/rsb:latest
-            ghcr.io/gamelife1314/rsb:${{ env.PKG_VERSION }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64,linux/arm64/v8
-          build-args: |
-            BUILDKIT_MULTI_PLATFORM=1
+            ghcr.io/gamelife1314/rsb:${{ steps.version.outputs.VERSION }}
