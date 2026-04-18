@@ -41,21 +41,11 @@ jobs:
           ref: ${{ github.ref }}
           token: ${{ env.GITHUB_TOKEN }}
 
-  # Build and upload binaries
-  upload-binaries:
-    name: Upload Binaries
+  # Build and upload binaries - native platforms only
+  upload-binaries-linux:
+    name: Upload Binaries (Linux x86_64)
     runs-on: ubuntu-latest
     needs: create-release
-    strategy:
-      matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - x86_64-unknown-linux-musl
-          - aarch64-unknown-linux-gnu
-          - x86_64-apple-darwin
-          - aarch64-apple-darwin
-          - x86_64-pc-windows-gnu
-          - x86_64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v4
       
@@ -63,8 +53,38 @@ jobs:
         uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: rsb
-          target: ${{ matrix.target }}
-          archive: rsb-${{ matrix.target }}
+          target: x86_64-unknown-linux-gnu
+          archive: rsb-x86_64-unknown-linux-gnu
+          token: ${{ env.GITHUB_TOKEN }}
+
+  upload-binaries-macos:
+    name: Upload Binaries (macOS)
+    runs-on: macos-latest
+    needs: create-release
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build and upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: rsb
+          target: x86_64-apple-darwin
+          archive: rsb-x86_64-apple-darwin
+          token: ${{ env.GITHUB_TOKEN }}
+
+  upload-binaries-windows:
+    name: Upload Binaries (Windows)
+    runs-on: windows-latest
+    needs: create-release
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build and upload
+        uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: rsb
+          target: x86_64-pc-windows-msvc
+          archive: rsb-x86_64-pc-windows-msvc
           token: ${{ env.GITHUB_TOKEN }}
 
   # Build and push Docker images
